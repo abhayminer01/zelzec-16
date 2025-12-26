@@ -179,6 +179,10 @@ export default function MobileBottomNav() {
           onClick={() => {
             closeChat();
             setIsMenuOpen(false);
+            if (!isAuthenticated) {
+              openLogin();
+              return;
+            }
             setTimeout(() => nextStep(), 100);
           }}
           className='flex flex-col items-center justify-center flex-1'

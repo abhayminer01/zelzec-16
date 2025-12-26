@@ -195,6 +195,10 @@ export default function MobileBottomNav() {
         {/* Messages */}
         <button
           onClick={() => {
+            if (!isAuthenticated) {
+              openLogin();
+              return;
+            }
             toggleSidebar();
             setIsMenuOpen(false);
           }}

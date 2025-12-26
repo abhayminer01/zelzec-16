@@ -56,7 +56,7 @@ export default function ProfilePage() {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
                     <div className="flex items-start justify-between mb-8">
                         <div className="flex items-center gap-4">
-                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary flex items-center justify-center text-white text-2xl font-bold">
                                 {user?.full_name?.charAt(0)?.toUpperCase() || 'U'}
                             </div>
                             <div>
@@ -120,7 +120,7 @@ export default function ProfilePage() {
                                 <div className="p-3">
                                     <h3 className="font-semibold text-gray-900 line-clamp-1">{p.title}</h3>
                                     <p className="text-sm text-gray-600 line-clamp-2 mt-1">{p.description}</p>
-                                    <p className="text-lg font-bold text-indigo-600 mt-2">₹{p.price?.toLocaleString('en-IN')}</p>
+                                    <p className="text-lg font-bold text-primary mt-2">₹{p.price?.toLocaleString('en-IN')}</p>
                                 </div>
                             </div>
                         ))}

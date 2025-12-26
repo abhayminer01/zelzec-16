@@ -21,7 +21,7 @@ const ProductImageCarousel = ({ images }) => {
     }
 
     return (
-        <div className="relative w-full h-[400px] md:h-[650px] overflow-hidden rounded-lg bg-gray-100">
+        <div className="relative w-full h-[400px] md:h-[550px] overflow-hidden rounded-lg bg-black">
             <img
                 src={`${import.meta.env.VITE_BACKEND_URL}${images[currentIndex]?.url}`}
                 alt="Product"

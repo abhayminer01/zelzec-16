@@ -26,7 +26,7 @@ const ProductInfoCard = ({ product, onChatClick, onMakeOfferClick, isOwner, curr
     };
 
     return (
-        <div className="w-full bg-[#F3E8FF] p-8 rounded-[32px] shadow-sm relative overflow-hidden sticky top-24">
+        <div className="w-full h-full bg-[#F3E8FF] p-8 rounded-[32px] shadow-sm relative overflow-hidden flex flex-col justify-between">
 
             {/* Price Section */}
             <div className="flex flex-col items-center mb-8">

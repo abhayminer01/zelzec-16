@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useModal } from "../contexts/ModalContext";
-import { registerUser } from "../services/auth";
+import { registerUser, getUser } from "../services/auth";
 import { toast } from "sonner";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -89,7 +89,8 @@ export default function RegisterComponent() {
       const res = await registerUser(payload);
       if (res?.success) {
         toast.success("User Registration", { description: "Successfully Registered User" });
-        login();
+        const user = await getUser();
+        login(user);
         closeRegister();
       } else {
         toast.error("Something Occurred while Registering", {
@@ -109,9 +110,15 @@ export default function RegisterComponent() {
       onClick={closeRegister}
     >
       <div
-        className="bg-white rounded-2xl shadow-xl w-[400px] p-8 flex flex-col justify-center items-center relative"
+        className="bg-white md:rounded-2xl shadow-xl w-full h-full md:h-auto md:w-[450px] p-6 md:p-8 flex flex-col items-center relative overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
+        <button
+          onClick={closeRegister}
+          className="absolute right-5 top-5 text-gray-500 hover:text-gray-700 md:hidden p-2"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
         <h1 className="text-2xl font-bold mb-1">Sign Up</h1>
         <p className="text-gray-700 text-sm">
           Welcome to <span className="font-semibold">ZelZec</span>

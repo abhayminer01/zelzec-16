@@ -74,3 +74,15 @@ export const updateUser = async (payload) => {
         return error?.response?.data || { success: false, message: "Network error" };
     }
 }
+
+export const logoutUser = async () => {
+    try {
+        const req = await api.post('/api/v1/auth/logout', {}, {
+            withCredentials: true
+        });
+        return req.data;
+    } catch (error) {
+        console.log(error);
+        return error?.response?.data || { success: false, message: "Network error" };
+    }
+}

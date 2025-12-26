@@ -1,5 +1,5 @@
 // src/components/ChatSidebar.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { Search, X } from 'lucide-react';
 import { useChat } from '../contexts/ChatContext';
 import MobileBottomNav from './MobileBottomNav';
@@ -9,9 +9,40 @@ const ChatSidebar = () => {
     const { isSidebarOpen, chats, currentUserId } = chatState;
 
     const [search, setSearch] = useState('');
+    const [position, setPosition] = useState({ top: 70, right: 120 }); // Defaults
+
+    // Calculate position
+    useLayoutEffect(() => {
+        if (isSidebarOpen) {
+            const updatePosition = () => {
+                const iconElement = document.getElementById('nav-message-icon-container');
+                if (iconElement) {
+                    const rect = iconElement.getBoundingClientRect();
+                    const iconCenterX = rect.left + rect.width / 2;
+
+                    // Notch is at right-6 (24px) + half width (8px) = 32px from right edge
+                    // We want: WindowWidth - SidebarRightCSS - 32 = IconCenterX
+                    // SidebarRightCSS = WindowWidth - IconCenterX - 32
+
+                    const calculatedRight = window.innerWidth - iconCenterX - 32;
+                    // Add a small vertical gap (e.g. 16px) below the icon
+                    const calculatedTop = rect.bottom + 12;
+
+                    setPosition({
+                        top: calculatedTop,
+                        right: Math.max(10, calculatedRight) // Keep at least 10px from edge
+                    });
+                }
+            };
+
+            updatePosition();
+            window.addEventListener('resize', updatePosition);
+            return () => window.removeEventListener('resize', updatePosition);
+        }
+    }, [isSidebarOpen]);
 
     // Close sidebar on scroll
-    React.useEffect(() => {
+    useEffect(() => {
         const handleScroll = () => {
             if (isSidebarOpen) {
                 closeSidebar();
@@ -40,18 +71,12 @@ const ChatSidebar = () => {
                 className="fixed inset-0 z-[50] hidden md:block" // Fixed overlay to capture clicks
                 onClick={closeSidebar}
             >
-                {/* 
-                   Positioning:
-                   Navbar height is usually h-16 (64px) or h-20 (80px) on md.
-                   We want it below the chat icon.
-                   The chat icon is in the right section. 
-                   Let's guess positioning: top-16 right-36 or so. 
-                   Ideally, we'd use a relative parent, but the overlay prevents that.
-                   We can put the overlay BEHIND the sidebar? No, overlay catches clicks.
-                   We'll hardcode position for now to match typical navbar layout.
-                */}
                 <div
-                    className="absolute top-[70px] right-[10%] lg:right-[120px] w-[350px] bg-[#F3F0FA] rounded-lg shadow-xl border border-[#E6E0F5] pointer-events-auto transform transition-transform duration-300 ease-in-out"
+                    className="absolute w-[350px] bg-[#F3F0FA] rounded-lg shadow-xl border border-[#E6E0F5] pointer-events-auto transform transition-all duration-200 ease-in-out"
+                    style={{
+                        top: `${position.top}px`,
+                        right: `${position.right}px`
+                    }}
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Callout Arrow */}

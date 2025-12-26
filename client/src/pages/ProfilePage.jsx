@@ -3,22 +3,14 @@ import NavBar from '../components/NavBar'
 import Footer from '../components/Footer'
 import MobileBottomNav from '../components/MobileBottomNav'
 import { getProductForProfile } from '../services/product-api';
-import { getUser, updateUser } from '../services/auth';
+import { getUser } from '../services/auth';
 import { useNavigate } from 'react-router-dom';
 import { toast, Toaster } from 'sonner';
-import { User, Mail, Phone, MapPin, Edit2, Save, X } from 'lucide-react';
+import { Settings, Crown, Heart } from 'lucide-react';
 
 export default function ProfilePage() {
     const [products, setProducts] = useState([]);
     const [user, setUser] = useState(null);
-    const [isEditing, setIsEditing] = useState(false);
-    const [formData, setFormData] = useState({
-        full_name: '',
-        email: '',
-        mobile: '',
-        address: '',
-        location: { lat: '', lng: '' }
-    });
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
@@ -31,13 +23,6 @@ export default function ProfilePage() {
                 ]);
                 setProducts(productsRes.data);
                 setUser(userData);
-                setFormData({
-                    full_name: userData?.full_name || '',
-                    email: userData?.email || '',
-                    mobile: userData?.mobile || '',
-                    address: userData?.address || '',
-                    location: userData?.location || { lat: '', lng: '' }
-                });
             } catch (error) {
                 toast.error('Failed to load profile data');
             } finally {
@@ -46,50 +31,6 @@ export default function ProfilePage() {
         };
         fetchData();
     }, []);
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        if (name === 'lat' || name === 'lng') {
-            setFormData(prev => ({
-                ...prev,
-                location: { ...prev.location, [name]: value }
-            }));
-        } else {
-            setFormData(prev => ({ ...prev, [name]: value }));
-        }
-    };
-
-    const handleSave = async () => {
-        try {
-            const res = await updateUser({
-                full_name: formData.full_name,
-                mobile: formData.mobile,
-                address: formData.address,
-                location: formData.location
-            });
-
-            if (res.success) {
-                setUser(res.data);
-                setIsEditing(false);
-                toast.success('Profile updated successfully!');
-            } else {
-                toast.error(res.message || 'Failed to update profile');
-            }
-        } catch (error) {
-            toast.error('An error occurred while updating profile');
-        }
-    };
-
-    const handleCancel = () => {
-        setFormData({
-            full_name: user?.full_name || '',
-            email: user?.email || '',
-            mobile: user?.mobile || '',
-            address: user?.address || '',
-            location: user?.location || { lat: '', lng: '' }
-        });
-        setIsEditing(false);
-    };
 
     if (loading) {
         return (
@@ -113,7 +54,7 @@ export default function ProfilePage() {
             <div className="max-w-7xl mx-auto px-4 py-8">
                 {/* Profile Header */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-                    <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-start justify-between mb-8">
                         <div className="flex items-center gap-4">
                             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
                                 {user?.full_name?.charAt(0)?.toUpperCase() || 'U'}
@@ -123,119 +64,39 @@ export default function ProfilePage() {
                                 <p className="text-sm text-gray-500">Member since {new Date(user?.createdAt).toLocaleDateString()}</p>
                             </div>
                         </div>
-                        {!isEditing ? (
-                            <button
-                                onClick={() => setIsEditing(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                            >
-                                <Edit2 size={16} />
-                                Edit Profile
-                            </button>
-                        ) : (
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={handleSave}
-                                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                                >
-                                    <Save size={16} />
-                                    Save
-                                </button>
-                                <button
-                                    onClick={handleCancel}
-                                    className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-                                >
-                                    <X size={16} />
-                                    Cancel
-                                </button>
-                            </div>
-                        )}
                     </div>
 
-                    {/* User Details Form */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                <User size={16} className="inline mr-2" />
-                                Full Name
-                            </label>
-                            <input
-                                type="text"
-                                name="full_name"
-                                value={formData.full_name}
-                                onChange={handleInputChange}
-                                disabled={!isEditing}
-                                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 ${isEditing ? 'bg-white border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500' : 'bg-gray-50 border-gray-200'} transition-colors outline-none`}
-                            />
-                        </div>
+                    {/* Action Buttons */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button
+                            onClick={() => navigate('/account')}
+                            className="flex items-center justify-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors group border border-gray-200"
+                        >
+                            <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg group-hover:bg-indigo-200 transition-colors">
+                                <Settings size={24} />
+                            </div>
+                            <span className="font-semibold text-gray-700 group-hover:text-gray-900">Account Settings</span>
+                        </button>
 
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                <Mail size={16} className="inline mr-2" />
-                                Email
-                            </label>
-                            <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                disabled={true}
-                                className="w-full px-4 py-2.5 border rounded-lg text-gray-900 bg-gray-100 border-gray-200 cursor-not-allowed"
-                            />
-                            <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
-                        </div>
+                        <button
+                            onClick={() => navigate('/premium')}
+                            className="flex items-center justify-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors group border border-gray-200"
+                        >
+                            <div className="p-2 bg-amber-100 text-amber-600 rounded-lg group-hover:bg-amber-200 transition-colors">
+                                <Crown size={24} />
+                            </div>
+                            <span className="font-semibold text-gray-700 group-hover:text-gray-900">Premium</span>
+                        </button>
 
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                <Phone size={16} className="inline mr-2" />
-                                Mobile Number
-                            </label>
-                            <input
-                                type="tel"
-                                name="mobile"
-                                value={formData.mobile}
-                                onChange={handleInputChange}
-                                disabled={!isEditing}
-                                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 ${isEditing ? 'bg-white border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500' : 'bg-gray-50 border-gray-200'} transition-colors outline-none`}
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                <MapPin size={16} className="inline mr-2" />
-                                Address
-                            </label>
-                            <input
-                                type="text"
-                                name="address"
-                                value={formData.address}
-                                onChange={handleInputChange}
-                                disabled={!isEditing}
-                                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 ${isEditing ? 'bg-white border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500' : 'bg-gray-50 border-gray-200'} transition-colors outline-none`}
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Latitude</label>
-                            <input
-                                type="text"
-                                name="lat"
-                                value={formData.location?.lat || ''}
-                                onChange={handleInputChange}
-                                disabled={!isEditing}
-                                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 ${isEditing ? 'bg-white border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500' : 'bg-gray-50 border-gray-200'} transition-colors outline-none`}
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Longitude</label>
-                            <input
-                                type="text"
-                                name="lng"
-                                value={formData.location?.lng || ''}
-                                onChange={handleInputChange}
-                                disabled={!isEditing}
-                                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 ${isEditing ? 'bg-white border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500' : 'bg-gray-50 border-gray-200'} transition-colors outline-none`}
-                            />
-                        </div>
+                        <button
+                            onClick={() => navigate('/favorites')}
+                            className="flex items-center justify-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors group border border-gray-200"
+                        >
+                            <div className="p-2 bg-rose-100 text-rose-600 rounded-lg group-hover:bg-rose-200 transition-colors">
+                                <Heart size={24} />
+                            </div>
+                            <span className="font-semibold text-gray-700 group-hover:text-gray-900">Favorites</span>
+                        </button>
                     </div>
                 </div>
 

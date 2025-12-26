@@ -160,10 +160,6 @@ export default function ProductPage() {
 
             {/* Breadcrumb */}
             <div className="px-4 md:px-10 py-2 text-sm text-gray-500">
-                <span>Kerala</span> {' > '}
-                <span>Motors</span> {' > '}
-                <span>Used Cars</span> {' > '}
-                <span>Ford</span> {' > '}
                 <span>{product.title}</span>
             </div>
 

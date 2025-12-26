@@ -12,42 +12,51 @@ export const ChatProvider = ({ children }) => {
     const socket = useSocket();
     const [chatState, setChatState] = useState({
         isSidebarOpen: false,
-        isMinimized: false,
-        chats: [],
-        activeChatId: null,
+        chats: [], // All available chats list (for sidebar)
         currentUserId: null,
-        messages: [],
-        text: '',
-        isTyping: false,
-        typingUser: null
+
+        // Multi-chat support
+        activeChats: [], // Array of { chatId, isMinimized }
+        chatSessions: {}, // { [chatId]: { messages: [], text: '', isTyping: false } }
     });
 
-    // activeChatIdRef for using inside socket callbacks
-    const activeChatIdRef = useRef(chatState.activeChatId);
+    const activeChatsRef = useRef(chatState.activeChats);
     const currentUserIdRef = useRef(chatState.currentUserId);
 
     useEffect(() => {
-        activeChatIdRef.current = chatState.activeChatId;
+        activeChatsRef.current = chatState.activeChats;
         currentUserIdRef.current = chatState.currentUserId;
-    }, [chatState.activeChatId, chatState.currentUserId]);
+    }, [chatState.activeChats, chatState.currentUserId]);
 
     useEffect(() => {
         if (!socket) return;
 
         socket.on("receive_message", (message) => {
-            const currentActiveId = activeChatIdRef.current;
+            const activeChats = activeChatsRef.current;
+            const isChatOpen = activeChats.some(c => c.chatId === message.chatId);
 
-            // 1. Update messages if chat is open
-            if (currentActiveId === message.chatId) {
-                setChatState(prev => ({
-                    ...prev,
-                    messages: [...prev.messages, message]
-                }));
-                // Mark as read immediately if window is focused? 
-                // For now, simpler to just append.
+            // 1. Update session messages if chat is open
+            if (isChatOpen) {
+                setChatState(prev => {
+                    const session = prev.chatSessions[message.chatId] || { messages: [], text: '', isTyping: false };
+
+                    // Deduplicate
+                    if (session.messages.some(m => m._id === message._id)) return prev;
+
+                    return {
+                        ...prev,
+                        chatSessions: {
+                            ...prev.chatSessions,
+                            [message.chatId]: {
+                                ...session,
+                                messages: [...session.messages, message]
+                            }
+                        }
+                    };
+                });
             }
 
-            // 2. Update chat list (last message, move to top, unread count)
+            // 2. Update sidebar chat list (preview, order, unread)
             setChatState(prev => {
                 const newChats = [...prev.chats];
                 const chatIndex = newChats.findIndex(c => c._id === message.chatId);
@@ -59,39 +68,53 @@ export const ChatProvider = ({ children }) => {
                         lastMessageAt: message.createdAt
                     };
 
-                    // Increment unread count if not active
-                    if (currentActiveId !== message.chatId) {
+                    // Increment unread if chat is NOT open (or maybe focused logic later)
+                    if (!isChatOpen) {
                         const myId = currentUserIdRef.current;
                         if (myId) {
-                            // Clone unreadCount or create new
                             const currentUnread = updatedChat.unreadCount || {};
-                            // We update OUR unread count
-                            const myUnreadCount = (currentUnread[myId] || 0) + 1;
-                            updatedChat.unreadCount = { ...currentUnread, [myId]: myUnreadCount };
+                            updatedChat.unreadCount = { ...currentUnread, [myId]: (currentUnread[myId] || 0) + 1 };
                         }
                     }
 
                     newChats.splice(chatIndex, 1);
                     newChats.unshift(updatedChat);
                 }
-
                 return { ...prev, chats: newChats };
             });
 
-            if (currentActiveId !== message.chatId) {
+            if (!isChatOpen && activeChats.every(c => c.chatId !== message.chatId)) {
                 toast.info(`New message from ${message.sender?.full_name || 'User'}`);
             }
         });
 
         socket.on("typing", (chatId) => {
-            if (activeChatIdRef.current === chatId) {
-                setChatState(prev => ({ ...prev, isTyping: true }));
+            if (activeChatsRef.current.some(c => c.chatId === chatId)) {
+                setChatState(prev => ({
+                    ...prev,
+                    chatSessions: {
+                        ...prev.chatSessions,
+                        [chatId]: {
+                            ...(prev.chatSessions[chatId] || { messages: [], text: '' }),
+                            isTyping: true
+                        }
+                    }
+                }));
             }
         });
 
         socket.on("stop_typing", (chatId) => {
-            if (activeChatIdRef.current === chatId) {
-                setChatState(prev => ({ ...prev, isTyping: false }));
+            if (activeChatsRef.current.some(c => c.chatId === chatId)) {
+                setChatState(prev => ({
+                    ...prev,
+                    chatSessions: {
+                        ...prev.chatSessions,
+                        [chatId]: {
+                            ...(prev.chatSessions[chatId] || { messages: [], text: '' }),
+                            isTyping: false
+                        }
+                    }
+                }));
             }
         });
 
@@ -110,39 +133,43 @@ export const ChatProvider = ({ children }) => {
                 chats: data.chats || [],
                 currentUserId: data.currentUserId
             }));
-
-            // Join socket room
-            if (socket && data.currentUserId) {
-                // The server automatically joins user room on connection based on session.
-                // So we don't need to manually emit join unless custom logic.
-            }
         } catch (err) {
             console.error("Failed to load chats", err);
         }
     };
 
     const openChat = async (data) => {
-        setChatState(prev => ({
-            ...prev,
-            activeChatId: data.chatId,
-            isMinimized: false,
-            text: data.initialText || prev.text // Use initialText if provided, otherwise keep existing
-        }));
+        const { chatId, initialText } = data;
 
-        if (socket) {
-            socket.emit("join_chat", data.chatId);
-        }
+        setChatState(prev => {
+            // Check if already open
+            if (prev.activeChats.some(c => c.chatId === chatId)) {
+                return prev;
+            }
+
+            // Init session if needed
+            const existingSession = prev.chatSessions[chatId] || { messages: [], text: initialText || '', isTyping: false };
+
+            return {
+                ...prev,
+                activeChats: [...prev.activeChats, { chatId, isMinimized: false }],
+                chatSessions: {
+                    ...prev.chatSessions,
+                    [chatId]: existingSession
+                }
+            };
+        });
+
+        if (socket) socket.emit("join_chat", chatId);
 
         try {
-            await markAsRead(data.chatId);
+            await markAsRead(chatId);
             setChatState(prev => {
                 const newChats = prev.chats.map(c => {
-                    if (c._id === data.chatId) {
+                    if (c._id === chatId) {
                         const currentUserId = prev.currentUserId;
-                        // Handle Map or Object structure of unreadCount
                         let newUnread = { ...(c.unreadCount || {}) };
                         if (currentUserId) newUnread[currentUserId] = 0;
-
                         return { ...c, unreadCount: newUnread };
                     }
                     return c;
@@ -152,26 +179,26 @@ export const ChatProvider = ({ children }) => {
         } catch (e) { console.error(e) }
     };
 
-    const closeChat = () => {
-        if (socket && chatState.activeChatId) {
-            socket.emit("leave_chat", chatState.activeChatId);
-        }
+    const closeChat = (chatId) => {
+        if (socket) socket.emit("leave_chat", chatId);
+
         setChatState(prev => ({
             ...prev,
-            isSidebarOpen: false,
-            activeChatId: null,
-            messages: [],
-            text: '',
-            isMinimized: false // Reset minimize as well
+            activeChats: prev.activeChats.filter(c => c.chatId !== chatId),
         }));
     };
 
-    // New function to ONLY close sidebar but keep chat widget open
-    const closeSidebar = () => {
+    const toggleMinimize = (chatId) => {
         setChatState(prev => ({
             ...prev,
-            isSidebarOpen: false
+            activeChats: prev.activeChats.map(c =>
+                c.chatId === chatId ? { ...c, isMinimized: !c.isMinimized } : c
+            )
         }));
+    };
+
+    const closeSidebar = () => {
+        setChatState(prev => ({ ...prev, isSidebarOpen: false }));
     };
 
     const toggleSidebar = async () => {
@@ -181,44 +208,63 @@ export const ChatProvider = ({ children }) => {
         }
     };
 
-    const appendMessage = (message) => {
+    const appendMessage = (chatId, message) => {
+        setChatState(prev => {
+            const session = prev.chatSessions[chatId] || { messages: [], text: '', isTyping: false };
+
+            // Deduplicate
+            if (session.messages.some(m => m._id === message._id)) return prev;
+
+            return {
+                ...prev,
+                chatSessions: {
+                    ...prev.chatSessions,
+                    [chatId]: {
+                        ...session,
+                        messages: [...session.messages, message]
+                    }
+                }
+            };
+        });
+    };
+
+    const updateMessages = (chatId, newMessages) => {
         setChatState(prev => ({
             ...prev,
-            messages: [...prev.messages, message]
+            chatSessions: {
+                ...prev.chatSessions,
+                [chatId]: {
+                    ...(prev.chatSessions[chatId] || { text: '', isTyping: false }),
+                    messages: newMessages || []
+                }
+            }
         }));
     };
 
-
-    const toggleMinimize = () => {
+    const updateText = (chatId, text) => {
         setChatState(prev => ({
             ...prev,
-            isMinimized: !prev.isMinimized
+            chatSessions: {
+                ...prev.chatSessions,
+                [chatId]: {
+                    ...(prev.chatSessions[chatId] || { messages: [], isTyping: false }),
+                    text
+                }
+            }
         }));
+
+        if (socket) {
+            socket.emit("typing", chatId);
+        }
     };
 
     const setActiveChat = (chat) => {
         openChat({
             chatId: chat._id,
-            user: chat.buyer === chatState.currentUserId ? chat.seller : chat.buyer, // logic might vary
+            user: chat.buyer === chatState.currentUserId ? chat.seller : chat.buyer,
             product: chat.product,
             currentUserId: chatState.currentUserId,
         });
-    };
-
-    const updateMessages = (newMessages) => {
-        setChatState(prev => ({ ...prev, messages: newMessages || [] }));
-    };
-
-    const updateText = (text) => {
-        setChatState(prev => ({ ...prev, text }));
-
-        // Emit typing
-        if (socket && chatState.activeChatId) {
-            socket.emit("typing", chatState.activeChatId);
-
-            // Debounce stop typing?
-            // Simple implementation in component usually better but we can put helper here
-        }
     };
 
     return (

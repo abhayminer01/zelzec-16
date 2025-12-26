@@ -106,10 +106,25 @@ const updateUser = async (req, res) => {
     }
 }
 
+const logoutUser = (req, res) => {
+    try {
+        req.session.destroy((err) => {
+            if (err) {
+                return res.status(500).json({ success: false, message: "Could not log out" });
+            }
+            res.clearCookie('connect.sid'); // Assuming default session cookie name
+            res.status(200).json({ success: true, message: "Logged out successfully" });
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, err: error });
+    }
+}
+
 module.exports = {
     checkAuth,
     registerUser,
     loginUser,
     getUser,
-    updateUser
+    updateUser,
+    logoutUser
 }

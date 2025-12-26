@@ -69,8 +69,8 @@ const CatalogueSidebar = ({
     };
 
     return (
-        <div className="w-full lg:w-[280px] flex-shrink-0">
-            <div className="bg-white lg:rounded-lg shadow-sm border border-gray-100 sticky top-24 overflow-hidden">
+        <div className="w-full flex-shrink-0">
+            <div className="bg-white lg:rounded-lg lg:shadow-sm lg:border border-gray-100 lg:sticky lg:top-24 overflow-hidden">
 
                 {/* Categories Section */}
                 <div className="border-b border-gray-100">

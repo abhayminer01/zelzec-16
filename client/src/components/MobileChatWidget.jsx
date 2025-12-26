@@ -6,9 +6,24 @@ import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
 
 const MobileChatWidget = () => {
-  const { chatState, updateMessages, updateText, closeChat } = useChat();
-  const { activeChatId, messages, text, currentUserId, activeChat } = chatState;
+  const { chatState, updateMessages, updateText, closeChat, appendMessage } = useChat();
+  const { activeChats, chatSessions, currentUserId, chats } = chatState;
+
+  // For mobile, we focus the last active chat (most recently opened)
+  const activeChatObj = activeChats.length > 0 ? activeChats[activeChats.length - 1] : null;
+  const activeChatId = activeChatObj?.chatId;
+
   const messagesEndRef = useRef(null);
+
+  // Derive active chat
+  const activeChat = chats.find(c => c._id === activeChatId);
+  const otherUser = activeChat?.buyer?._id === currentUserId ? activeChat?.seller : activeChat?.buyer;
+  const sellerName = otherUser?.full_name || "User";
+  const sellerAvatar = otherUser?.avatar;
+
+  // Get session data
+  const session = (activeChatId && chatSessions[activeChatId]) || { messages: [], text: '', isTyping: false };
+  const { messages, text } = session;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -20,11 +35,11 @@ const MobileChatWidget = () => {
     const loadMessages = async () => {
       try {
         const data = await getHistory(activeChatId);
-        updateMessages(Array.isArray(data.messages) ? data.messages : []);
+        updateMessages(activeChatId, Array.isArray(data.messages) ? data.messages : []);
       } catch (err) {
         console.error("Failed to load messages", err);
         toast.error("Failed to load chat history");
-        updateMessages([]);
+        updateMessages(activeChatId, []);
       }
     };
 
@@ -35,16 +50,15 @@ const MobileChatWidget = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Only show when a chat is active
-  if (!activeChatId) return null;
-
   const handleSend = async () => {
     if (!text?.trim()) return;
 
     try {
-      const newMessage = await sendMessage(activeChatId, text.trim());
-      updateMessages(prev => [...prev, newMessage]);
-      updateText("");
+      const response = await sendMessage(activeChatId, text.trim());
+      if (response && response.success && response.data) {
+        appendMessage(activeChatId, response.data);
+        updateText(activeChatId, "");
+      }
     } catch (err) {
       console.error("Send failed", err);
       toast.error("Message failed to send");
@@ -58,47 +72,76 @@ const MobileChatWidget = () => {
     }
   };
 
-  const sellerName = activeChat?.product?.user?.full_name?.trim() || 'Seller';
+  // Only show when a chat is active
+  if (!activeChatId) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-white">
-      {/* Header */}
-      <div className="bg-[#8069AE] text-white p-4 flex items-center">
+    <div className="fixed inset-0 z-[100] bg-[#F3F4F6] flex flex-col safe-area-bottom font-sans">
+      {/* Header with Glassmorphism feel */}
+      <div className="bg-gradient-to-r from-[#8069AE] to-[#9C82D1] text-white p-4 flex items-center shrink-0 shadow-md">
         <button
-          onClick={() => {
-            // Close active chat → go back to sidebar
-            // We don't close the entire sidebar, just clear active chat
-            // But your context may use `closeChat` to do that — adjust if needed
-            closeChat(); 
-          }}
-          className="mr-3"
+          onClick={() => closeChat(activeChatId)}
+          className="mr-3 p-1.5 -ml-1 hover:bg-white/20 rounded-full transition-colors active:scale-95"
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-white/30 flex items-center justify-center text-sm">
-            {(sellerName?.charAt(0) || 'S').toUpperCase()}
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            {sellerAvatar ? (
+              <img src={sellerAvatar} alt="avatar" className="w-10 h-10 rounded-full object-cover bg-white ring-2 ring-white/30" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-sm font-bold ring-2 ring-white/30">
+                {(sellerName?.charAt(0) || 'U').toUpperCase()}
+              </div>
+            )}
+            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 border-2 border-[#8069AE] rounded-full"></div>
           </div>
-          <span className="font-medium">{sellerName}</span>
+
+          <div className="flex flex-col">
+            <span className="font-semibold text-lg leading-tight tracking-wide">{sellerName}</span>
+            {activeChat?.product && (
+              <span className="text-xs text-indigo-100/90 truncate max-w-[200px] flex items-center gap-1">
+                <span>RE:</span> {activeChat.product.title}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="h-[calc(100vh-140px)] overflow-y-auto p-4 bg-purple-50">
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ backgroundImage: 'radial-gradient(#E5E7EB 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
         {messages.length === 0 ? (
-          <p className="text-gray-500 text-center py-10">No messages yet.</p>
+          <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-2">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-2">
+              <span className="text-2xl">👋</span>
+            </div>
+            <p className="text-sm font-medium">Say hello to start the conversation!</p>
+          </div>
         ) : (
-          messages.map((msg) => {
-            if (!msg || typeof msg.text !== 'string' || !msg.sender) return null;
-            const isOwn = String(msg.sender) === String(currentUserId);
+          messages.map((msg, index) => {
+            if (!msg || typeof msg.text !== 'string' && !msg.sender) return null;
+            const senderId = msg.sender._id ? msg.sender._id : msg.sender;
+            const isOwn = String(senderId) === String(currentUserId);
+
+            // Format time
+            const time = msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
             return (
               <div
-                key={msg._id || msg.createdAt}
-                className={`mb-3 max-w-[80%] p-3 rounded-lg break-words ${
-                  isOwn ? 'ml-auto bg-[#8069AE] text-white' : 'mr-auto bg-white text-gray-800'
-                }`}
+                key={msg._id || index}
+                className={`flex flex-col max-w-[85%] ${isOwn ? 'ml-auto items-end' : 'mr-auto items-start'}`}
               >
-                {msg.text}
+                <div
+                  className={`px-4 py-3 rounded-2xl break-words text-[15px] shadow-sm relative group ${isOwn
+                    ? 'bg-gradient-to-br from-[#8069AE] to-[#6A5299] text-white rounded-tr-none'
+                    : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'
+                    }`}
+                >
+                  {msg.text}
+                </div>
+                <span className={`text-[10px] text-gray-400 mt-1 px-1 ${isOwn ? 'text-right' : 'text-left'}`}>
+                  {time}
+                </span>
               </div>
             );
           })
@@ -106,26 +149,41 @@ const MobileChatWidget = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="p-2 border-t border-gray-200 flex">
-        <input
-          type="text"
-          value={text || ''}
-          onChange={(e) => updateText(e.target.value)}
-          onKeyDown={handleKeyPress}
-          placeholder="Type a message..."
-          className="flex-1 px-4 py-3  border border-gray-300 rounded-l text-sm"
-        />
-        <button
-          onClick={handleSend}
-          disabled={!text?.trim()}
-          className="bg-[#8069AE] text-white px-6 rounded-r hover:bg-purple-700 "
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send-horizontal-icon lucide-send-horizontal"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z"/><path d="M6 12h16"/></svg>
-        </button>
+      {/* Input Area */}
+      <div className="p-3 bg-white shrink-0 mb-16 md:mb-0 border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <div className="flex items-end gap-2 bg-gray-50 p-1.5 rounded-[24px] border border-gray-200 focus-within:border-[#8069AE] focus-within:ring-2 focus-within:ring-[#8069AE]/10 transition-all">
+          <textarea
+            value={text || ''}
+            onChange={(e) => {
+              updateText(activeChatId, e.target.value);
+              e.target.style.height = 'auto';
+              e.target.style.height = Math.min(e.target.scrollHeight, 128) + 'px';
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+                e.target.style.height = 'auto';
+              }
+            }}
+            placeholder="Type a message..."
+            rows={1}
+            className="flex-1 px-4 py-3 bg-transparent border-none focus:outline-none text-[15px] resize-none max-h-32 min-h-[48px] placeholder:text-gray-400"
+          />
+          <button
+            onClick={() => {
+              handleSend();
+              const textarea = document.querySelector('textarea.resize-none');
+              if (textarea) textarea.style.height = 'auto';
+            }}
+            disabled={!text?.trim()}
+            className="bg-[#8069AE] text-white p-3 rounded-full hover:bg-[#6A5299] disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 shadow-md shadow-[#8069AE]/20 mb-0.5 mr-0.5"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send-horizontal relative left-[1px]"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z" /><path d="M6 12h16" /></svg>
+          </button>
+        </div>
       </div>
     </div>
   );
 };
-
 export default MobileChatWidget;

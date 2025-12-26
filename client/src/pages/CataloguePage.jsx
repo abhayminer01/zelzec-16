@@ -1,6 +1,6 @@
 // src/pages/CataloguePage.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { getAllProducts } from '../services/product-api';
 import { getAllCategories } from '../services/category-api';
@@ -73,6 +73,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 const CataloguePage = () => {
   const params = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // State
   const [products, setProducts] = useState([]);
@@ -87,7 +88,7 @@ const CataloguePage = () => {
   // Filters State
   const [filters, setFilters] = useState({
     category: params.id || '',
-    search: '',
+    search: searchParams.get('search') || '',
     priceMin: '',
     priceMax: '',
     location: '',
@@ -96,6 +97,7 @@ const CataloguePage = () => {
 
   // Dynamic Filters State
   const [dynamicFilters, setDynamicFilters] = useState({});
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   // Derived state: Get current category object to know form_data
   const selectedCategory = categories.find(c => c._id === filters.category);
@@ -125,18 +127,25 @@ const CataloguePage = () => {
   useEffect(() => {
     if (params.id) {
       setFilters(prev => ({ ...prev, category: params.id }));
-      // Do NOT reset page here strictly, as it might conflict with other updates, distinct effect for page reset is better or handle in handler
       setDynamicFilters({});
     } else {
-      // Only clear category if explicitly navigating to /catalogue without ID, handling this might be tricky if not careful
-      // checking if currently has category but params has none -> clear it
-      // But for now, let's trust the logic that if user clicks "All Categories" we navigate and this updates
       if (filters.category && !params.id) {
         setFilters(prev => ({ ...prev, category: '' }));
         setDynamicFilters({});
       }
     }
   }, [params.id]);
+
+  // Sync search from URL
+  useEffect(() => {
+    const searchParam = searchParams.get('search');
+    if (searchParam !== null && searchParam !== filters.search) {
+      setFilters(prev => ({ ...prev, search: searchParam }));
+    } else if (searchParam === null && filters.search !== '') {
+      // Optional: clear search if removed from URL, though usually we set URL from state.
+      // But here we want URL to drive state for initial load or external navigation.
+    }
+  }, [searchParams]);
 
 
   // Fetch Products
@@ -210,8 +219,8 @@ const CataloguePage = () => {
           <span className="text-gray-900 font-medium">{selectedCategory ? selectedCategory.title : 'All Categories'}</span>
         </div>
 
-        {/* Page Title & Sort Head */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-gray-200 gap-4">
+        {/* Page Title & Sort Head (Desktop) */}
+        <div className="hidden lg:flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-gray-200 gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
               {selectedCategory ? `${selectedCategory.title} for Sale` : 'Used Items for Sale'}
@@ -241,27 +250,79 @@ const CataloguePage = () => {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        {/* Mobile Filter & Sort Bar */}
+        <div className="lg:hidden flex items-center justify-between mb-6 sticky top-0 bg-gray-50 z-20 py-2">
+          <button
+            onClick={() => setIsMobileFiltersOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 shadow-sm"
+          >
+            <div className="relative">
+              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+              {(Object.keys(dynamicFilters).length > 0 || filters.priceMin || filters.priceMax || filters.location) && (
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-indigo-600 rounded-full border-2 border-white"></span>
+              )}
+            </div>
+            Filters
+          </button>
 
-          {/* Left Sidebar - Filters */}
-          <CatalogueSidebar
-            filters={filters}
-            setFilters={(newFilters) => {
-              setFilters(newFilters);
-              setPagination(prev => ({ ...prev, currentPage: 1 })); // Reset page on filter change
-            }}
-            dynamicFilters={dynamicFilters}
-            setDynamicFilters={(newDynFilters) => {
-              setDynamicFilters(newDynFilters);
-              setPagination(prev => ({ ...prev, currentPage: 1 }));
-            }}
-            categories={categories}
-            selectedCategory={selectedCategory}
-            navigate={navigate}
-          />
+          <div className="relative">
+            <select
+              value={filters.sort}
+              onChange={(e) => setFilters(prev => ({ ...prev, sort: e.target.value, currentPage: 1 }))}
+              className="appearance-none pl-3 pr-8 py-2 border border-gray-200 rounded-lg bg-white text-sm font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-sm"
+            >
+              <option value="latest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="price_low">Price: Low</option>
+              <option value="price_high">Price: High</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-8 relative">
+
+          {/* Left Sidebar - Filters (Desktop: Sticky, Mobile: Fixed Drawer) */}
+          <div className={`
+              fixed inset-0 z-50 bg-black/50 lg:hidden transition-opacity duration-300
+              ${isMobileFiltersOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+          `} onClick={() => setIsMobileFiltersOpen(false)} />
+
+          <div className={`
+              fixed inset-y-0 left-0 z-50 w-[85vw] max-w-[320px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out lg:transform-none lg:static lg:w-[280px] lg:shadow-none lg:bg-transparent lg:z-0
+              ${isMobileFiltersOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          `}>
+            <div className="h-full overflow-y-auto lg:overflow-visible">
+              <div className="flex items-center justify-between p-4 border-b border-gray-100 lg:hidden">
+                <h2 className="text-lg font-bold text-gray-900">Filters</h2>
+                <button onClick={() => setIsMobileFiltersOpen(false)} className="p-2 -mr-2 text-gray-500">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+              </div>
+
+              <CatalogueSidebar
+                filters={filters}
+                setFilters={(newFilters) => {
+                  setFilters(newFilters);
+                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                }}
+                dynamicFilters={dynamicFilters}
+                setDynamicFilters={(newDynFilters) => {
+                  setDynamicFilters(newDynFilters);
+                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                }}
+                categories={categories}
+                selectedCategory={selectedCategory}
+                navigate={navigate}
+                closeMobileFilters={() => setIsMobileFiltersOpen(false)}
+              />
+            </div>
+          </div>
 
           {/* Main Content - Product List */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             {loading ? (
               <div className="flex flex-col items-center justify-center h-64 w-full">
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mb-4"></div>

@@ -11,12 +11,18 @@ import { ChatProvider } from './contexts/ChatContext';
 import { SocketProvider } from './contexts/SocketContext';
 import ProductPage from './pages/ProductPage';
 import ProfilePage from './pages/ProfilePage';
+import AccountPage from './pages/AccountPage';
+import SearchPage from './pages/SearchPage';
+import { SettingsProvider } from './contexts/SettingsContext';
+import SettingsSidebar from './components/SettingsSidebar';
 
 import ChatSidebar from './components/ChatSidebar';
-import ChatWidget from './components/ChatWidget';
+import ChatContainer from './components/ChatContainer';
 import CataloguePage from './pages/CataloguePage';
 import MobileChatSidebar from './components/MobileChatSidebar';
 import MobileChatWidget from './components/MobileChatWidget';
+// ... rest of imports
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ModalProvider>
@@ -24,24 +30,31 @@ createRoot(document.getElementById('root')).render(
         <SellProvider>
           <SocketProvider>
             <ChatProvider>
-              <Router>
-                <Routes>
-                  <Route path='/' element={<HomePage />} />
-                  <Route path='/product/:id' element={<ProductPage />} />
-                  <Route path='/profile' element={<ProfilePage />} />
-                  <Route path='/catalogue' element={<CataloguePage />} />
-                  <Route path='/category/:id' element={<CataloguePage />} />
-                </Routes>
-                <div className="hidden md:block">
-                  <ChatWidget />
-                  <ChatSidebar />
-                </div>
+              <SettingsProvider>
+                <Router>
+                  <Routes>
+                    <Route path='/' element={<HomePage />} />
+                    <Route path='/product/:id' element={<ProductPage />} />
+                    <Route path='/profile' element={<ProfilePage />} />
+                    <Route path='/search' element={<SearchPage />} />
+                    <Route path='/account' element={<AccountPage />} />
+                    <Route path='/catalogue' element={<CataloguePage />} />
+                    <Route path='/category/:id' element={<CataloguePage />} />
+                  </Routes>
+                  <div className="hidden md:block">
+                    {/* Multi-window Chat Container */}
+                    <ChatContainer />
+                    <ChatSidebar />
+                    <SettingsSidebar />
+                  </div>
 
-                <div className="block md:hidden">
-                  <MobileChatSidebar />
-                  <MobileChatWidget />
-                </div>
-              </Router>
+                  <div className="block md:hidden">
+                    <MobileChatSidebar />
+                    <MobileChatWidget />
+                    <SettingsSidebar />
+                  </div>
+                </Router>
+              </SettingsProvider>
             </ChatProvider>
           </SocketProvider>
         </SellProvider>

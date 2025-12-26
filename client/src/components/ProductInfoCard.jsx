@@ -1,86 +1,92 @@
-// src/components/ProductInfoCard.jsx
 import React from 'react';
-import { MessageCircle, CreditCard } from 'lucide-react';
 
 const ProductInfoCard = ({ product, onChatClick, onMakeOfferClick, isOwner, currentUserId }) => {
     const seller = product.user || {};
     const price = product.price;
 
+    // Helper to format date as "26th October 2025"
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        const day = date.getDate();
+        const month = date.toLocaleString('default', { month: 'long' });
+        const year = date.getFullYear();
+
+        const suffix = (d) => {
+            if (d > 3 && d < 21) return 'th';
+            switch (d % 10) {
+                case 1: return "st";
+                case 2: return "nd";
+                case 3: return "rd";
+                default: return "th";
+            }
+        };
+
+        return `${day}${suffix(day)} ${month} ${year}`;
+    };
+
     return (
-        <div className="space-y-6">
+        <div className="w-full bg-[#F3E8FF] p-8 rounded-[32px] shadow-sm relative overflow-hidden sticky top-24">
 
-            {/* Price Card */}
-            <div className="bg-[#F0E9FF] p-6 rounded-xl shadow-sm border border-[#E0D4FC]">
-                <div className="flex flex-col items-center text-center">
-                    <p className="text-sm text-gray-500 font-medium mb-1">Price</p>
-                    <h1 className="text-4xl md:text-5xl font-bold text-[#7C5CB9] mb-6">
-                        ₹{price?.toLocaleString('en-IN') || 'N/A'}
-                    </h1>
+            {/* Price Section */}
+            <div className="flex flex-col items-center mb-8">
+                <h1 className="text-5xl font-medium text-black mb-6 tracking-tight">
+                    ₹ {price?.toLocaleString('en-IN') || 'N/A'}
+                </h1>
 
-                    {!isOwner && (
-                        <div className="w-full space-y-3">
-                            <button
-                                onClick={onMakeOfferClick}
-                                className="w-full bg-[#8069AE] hover:bg-[#6e579b] text-white font-semibold py-3.5 px-6 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-                            >
-                                <CreditCard size={18} />
-                                Make offer
-                            </button>
-                        </div>
-                    )}
+                {!isOwner && (
+                    <button
+                        onClick={onMakeOfferClick}
+                        className="w-full bg-[#7C5CB9] hover:bg-[#6c4ea6] text-white text-lg font-normal py-4 rounded-xl transition-all shadow-sm mb-3"
+                    >
+                        Make offer
+                    </button>
+                )}
 
-                    <div className="mt-4 text-[10px] text-gray-500 font-medium uppercase tracking-widest">
-                        Posted: {product.createdAt ? new Date(product.createdAt).toLocaleDateString() : 'N/A'}
-                    </div>
-                </div>
+                <p className="text-[11px] text-black font-medium mt-1">
+                    Posted on: {formatDate(product.createdAt)}
+                </p>
             </div>
 
-            {/* Seller Profile Card */}
+            {/* Seller Section (Inner Card) */}
             {!isOwner ? (
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm relative overflow-hidden">
-                    <div className="flex items-center gap-4 mb-5 relative z-10">
-                        <div className="relative">
-                            <img
-                                src={
-                                    seller.avatar ||
-                                    `https://ui-avatars.com/api/?name=${encodeURIComponent(seller.full_name || 'Seller')}&background=8069AE&color=fff`
-                                }
-                                alt={seller.full_name || 'Seller'}
-                                className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm"
-                            />
-                            <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
-                        </div>
-                        <div>
-                            <h4 className="font-bold text-gray-900 text-lg leading-tight">{seller.full_name || 'Seller Name'}</h4>
-                            <p className="text-xs text-gray-500 font-medium mt-0.5">Verified Seller • {product.location?.place || 'Kerala'}</p>
+                <div className="bg-[#FdfCFF] p-5 rounded-[20px] shadow-sm relative z-10 w-[90%] mx-auto">
+                    <div className="flex items-center gap-4 mb-5 justify-center">
+                        <img
+                            src={seller.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(seller.full_name || 'Seller')}&background=7C5CB9&color=fff`}
+                            alt={seller.full_name || 'Seller'}
+                            className="w-14 h-14 rounded-full object-cover"
+                        />
+                        <div className="flex flex-col items-start">
+                            <span className="font-bold text-black text-[15px] leading-tight">
+                                {seller.full_name || 'Name Line 1'}
+                            </span>
+                            <span className="text-[11px] text-black font-normal mt-0.5">
+                                {product.location?.place || 'Seller Type'}
+                            </span>
                         </div>
                     </div>
 
                     <button
                         onClick={onChatClick}
-                        className="w-full bg-[#8069AE] text-white font-medium py-3 px-6 rounded-lg hover:bg-[#6e579b] transition-colors flex items-center justify-center gap-2 relative z-10"
+                        className="w-full bg-[#7C5CB9] hover:bg-[#6c4ea6] text-white text-lg font-normal py-3.5 rounded-xl transition-all shadow-sm"
                     >
-                        <MessageCircle size={18} />
                         Chat with seller
                     </button>
-
-                    {/* Background decoration */}
-                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-purple-50 rounded-full blur-2xl opacity-60 pointer-events-none"></div>
                 </div>
             ) : (
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                <div className="bg-white/80 p-5 rounded-[20px] border border-purple-100 text-center">
                     <h3 className="font-bold text-gray-900 mb-4">Manage Product</h3>
                     <div className="grid grid-cols-2 gap-3">
-                        <button className="flex items-center justify-center bg-blue-50 text-blue-600 font-medium py-2.5 px-4 rounded-lg hover:bg-blue-100 transition-colors border border-blue-100">
+                        <button className="bg-white border border-purple-200 text-purple-700 font-medium py-2 rounded-lg hover:bg-purple-50 transition-colors">
                             Edit
                         </button>
-                        <button className="flex items-center justify-center bg-red-50 text-red-600 font-medium py-2.5 px-4 rounded-lg hover:bg-red-100 transition-colors border border-red-100">
+                        <button className="bg-white border border-red-200 text-red-600 font-medium py-2 rounded-lg hover:bg-red-50 transition-colors">
                             Delete
                         </button>
                     </div>
                 </div>
             )}
-
         </div>
     );
 };

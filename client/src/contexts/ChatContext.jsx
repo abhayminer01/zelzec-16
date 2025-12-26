@@ -142,20 +142,24 @@ export const ChatProvider = ({ children }) => {
         const { chatId, initialText } = data;
 
         setChatState(prev => {
-            // Check if already open
-            if (prev.activeChats.some(c => c.chatId === chatId)) {
-                return prev;
-            }
+            // Remove if already present (to re-add at end for focus)
+            const otherChats = prev.activeChats.filter(c => c.chatId !== chatId);
 
-            // Init session if needed
-            const existingSession = prev.chatSessions[chatId] || { messages: [], text: initialText || '', isTyping: false };
+            // Init or get existing session
+            const existingSession = prev.chatSessions[chatId] || { messages: [], text: '', isTyping: false };
+
+            // Update text if initialText is provided, otherwise keep existing
+            const newText = initialText !== undefined ? initialText : existingSession.text;
 
             return {
                 ...prev,
-                activeChats: [...prev.activeChats, { chatId, isMinimized: false }],
+                activeChats: [...otherChats, { chatId, isMinimized: false }],
                 chatSessions: {
                     ...prev.chatSessions,
-                    [chatId]: existingSession
+                    [chatId]: {
+                        ...existingSession,
+                        text: newText
+                    }
                 }
             };
         });

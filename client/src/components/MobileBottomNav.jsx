@@ -10,7 +10,7 @@ import { logoutUser } from '../services/auth'; // Added
 
 export default function MobileBottomNav() {
   const { nextStep } = useSell();
-  const { toggleSidebar, closeChat } = useChat();
+  const { toggleSidebar, closeSidebar } = useChat();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -21,11 +21,16 @@ export default function MobileBottomNav() {
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const toggleRef = useRef(null);
 
   // Close menu on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        (!toggleRef.current || !toggleRef.current.contains(event.target))
+      ) {
         setIsMenuOpen(false);
       }
     };
@@ -37,7 +42,7 @@ export default function MobileBottomNav() {
 
   // Close chat and navigate
   const navigateAndCloseChat = (path) => {
-    closeChat();
+    closeSidebar();
     setIsMenuOpen(false); // Close menu if open
     setTimeout(() => {
       navigate(path);
@@ -140,11 +145,13 @@ export default function MobileBottomNav() {
 
                 <div className="mt-8 flex items-center justify-center gap-6 text-sm text-gray-400">
                   <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500">
+                    </div>
                     <span>Sell Fast</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500">
+                    </div>
                     <span>Buy Smart</span>
                   </div>
                 </div>
@@ -177,7 +184,7 @@ export default function MobileBottomNav() {
         {/* Sell / Post Ad */}
         <button
           onClick={() => {
-            closeChat();
+            closeSidebar();
             setIsMenuOpen(false);
             if (!isAuthenticated) {
               openLogin();
@@ -211,6 +218,7 @@ export default function MobileBottomNav() {
 
         {/* Menu Toggle */}
         <button
+          ref={toggleRef}
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className='flex flex-col items-center justify-center flex-1'
         >

@@ -118,9 +118,7 @@ export default function AccountPage() {
                                     <div className="w-28 h-28 rounded-full bg-[#8069AE]/10 flex items-center justify-center text-primary text-4xl font-bold border-4 border-white shadow-md">
                                         {user?.full_name?.charAt(0)?.toUpperCase() || <User size={40} />}
                                     </div>
-                                    <button className="absolute bottom-0 right-0 p-2 bg-[#8069AE] text-white rounded-full hover:bg-[#6A5299] transition-colors shadow-sm">
-                                        <Camera size={16} />
-                                    </button>
+
                                 </div>
                                 <h2 className="text-xl font-bold text-gray-900">{user?.full_name || 'User'}</h2>
                                 <p className="text-sm text-gray-500 mb-4">{user?.email || 'No email'}</p>

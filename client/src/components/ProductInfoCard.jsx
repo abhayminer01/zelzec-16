@@ -1,6 +1,8 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const ProductInfoCard = ({ product, onChatClick, onMakeOfferClick, isOwner, currentUserId }) => {
+    const navigate = useNavigate();
     const seller = product.user || {};
     const price = product.price;
 
@@ -76,15 +78,15 @@ const ProductInfoCard = ({ product, onChatClick, onMakeOfferClick, isOwner, curr
                 </div>
             ) : (
                 <div className="bg-white/80 p-5 rounded-[20px] border border-purple-100 text-center">
-                    <h3 className="font-bold text-gray-900 mb-4">Manage Product</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                        <button className="bg-white border border-purple-200 text-purple-700 font-medium py-2 rounded-lg hover:bg-purple-50 transition-colors">
-                            Edit
-                        </button>
-                        <button className="bg-white border border-red-200 text-red-600 font-medium py-2 rounded-lg hover:bg-red-50 transition-colors">
-                            Delete
-                        </button>
-                    </div>
+                    <p className="text-gray-700 font-medium leading-relaxed mb-4">
+                        You can edit or delete your advertisement from the My Ads Settings
+                    </p>
+                    <button
+                        onClick={() => navigate('/myads')}
+                        className="bg-[#7C5CB9] hover:bg-[#6c4ea6] text-white font-medium py-2.5 px-6 rounded-xl transition-all shadow-sm"
+                    >
+                        Manage Products
+                    </button>
                 </div>
             )}
         </div>

@@ -102,7 +102,15 @@ export default function ProfilePage() {
 
                 {/* My Products Section */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <h2 className="text-xl font-bold text-gray-900 mb-6">My Products ({products.length})</h2>
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-bold text-gray-900">My Products ({products.length})</h2>
+                        <button
+                            onClick={() => navigate('/myads')}
+                            className="bg-primary/10 hover:bg-primary/20 text-primary font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+                        >
+                            Manage Products
+                        </button>
+                    </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         {products.map((p) => (
                             <div

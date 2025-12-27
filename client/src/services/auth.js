@@ -86,3 +86,15 @@ export const logoutUser = async () => {
         return error?.response?.data || { success: false, message: "Network error" };
     }
 }
+
+export const deleteUser = async () => {
+    try {
+        const req = await api.delete('/api/v1/auth/', {
+            withCredentials: true
+        });
+        return req.data;
+    } catch (error) {
+        console.log(error);
+        return error?.response?.data || { success: false, message: "Network error" };
+    }
+}

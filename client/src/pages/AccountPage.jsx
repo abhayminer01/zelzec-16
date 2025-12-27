@@ -2,11 +2,15 @@ import React, { useEffect, useState } from 'react';
 import NavBar from '../components/NavBar';
 import MobileBottomNav from '../components/MobileBottomNav';
 import Footer from '../components/Footer';
-import { getUser, updateUser } from '../services/auth';
+import { getUser, updateUser, deleteUser, logoutUser } from '../services/auth';
 import { toast, Toaster } from 'sonner';
 import { User, Mail, Phone, MapPin, Save, Edit2, X, Shield, Camera, Bell } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function AccountPage() {
+    const navigate = useNavigate();
+    const { logout } = useAuth();
     const [user, setUser] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
@@ -82,6 +86,25 @@ export default function AccountPage() {
             location: user?.location || { lat: '', lng: '' }
         });
         setIsEditing(false);
+    };
+
+    const handleDeleteAccount = async () => {
+        if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+            try {
+                const res = await deleteUser();
+                if (res.success) {
+                    await logoutUser();
+                    logout();
+                    navigate('/');
+                    toast.success('Account deleted successfully');
+                } else {
+                    toast.error(res.message || 'Failed to delete account');
+                }
+            } catch (error) {
+                console.error(error);
+                toast.error('An error occurred while deleting account');
+            }
+        }
     };
 
     if (loading) {
@@ -281,15 +304,30 @@ export default function AccountPage() {
                                     )}
 
                                     {activeTab === 'security' && (
-                                        <div className="text-center py-12">
-                                            <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                                <Shield className="h-8 w-8 text-gray-400" />
+                                        <div className="space-y-8">
+                                            <div className="text-center py-8 border-b border-gray-100">
+                                                <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                    <Shield className="h-8 w-8 text-gray-400" />
+                                                </div>
+                                                <h3 className="text-lg font-medium text-gray-900">Security Settings</h3>
+                                                <p className="text-gray-500 mt-1">Manage your account security.</p>
+                                                <button className="mt-6 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                                    Update Password
+                                                </button>
                                             </div>
-                                            <h3 className="text-lg font-medium text-gray-900">No Security Options Yet</h3>
-                                            <p className="text-gray-500 mt-1">Password change and 2FA features coming soon.</p>
-                                            <button className="mt-6 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                                                Update Password
-                                            </button>
+
+                                            <div className="bg-red-50 rounded-xl p-6 border border-red-100">
+                                                <h3 className="text-lg font-bold text-red-700 mb-2">Delete Account</h3>
+                                                <p className="text-red-600/80 text-sm mb-6">
+                                                    Once you delete your account, there is no going back. Please be certain.
+                                                </p>
+                                                <button
+                                                    onClick={handleDeleteAccount}
+                                                    className="bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-6 rounded-lg transition-colors shadow-sm text-sm"
+                                                >
+                                                    Delete Account
+                                                </button>
+                                            </div>
                                         </div>
                                     )}
 

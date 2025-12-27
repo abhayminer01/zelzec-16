@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Home, Search, Plus, MessageCircle, Menu, User, Settings, LogOut, UserCircle2 } from 'lucide-react'; // Added icons
+import { Home, Search, Plus, MessageCircle, Menu, User, Settings, LogOut, UserCircle2, Package } from 'lucide-react'; // Added icons
 import { useSell } from '../contexts/SellContext';
 import { useChat } from '../contexts/ChatContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -89,6 +89,16 @@ export default function MobileBottomNav() {
                     <User size={16} />
                   </div>
                   Profile
+                </button>
+
+                <button
+                  onClick={() => navigateAndCloseChat('/myads')}
+                  className="w-full text-left px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary rounded-xl flex items-center gap-3 transition-all group"
+                >
+                  <div className="p-1.5 rounded-lg bg-gray-100 text-gray-500 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                    <Package size={16} />
+                  </div>
+                  My Ads
                 </button>
 
                 <button

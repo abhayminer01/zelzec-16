@@ -31,7 +31,8 @@ export const getAllProducts = async (params) => {
     const req = await api.get('/', { params });
     return req.data;
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+    return { success: false, message: error.message };
   }
 }
 
@@ -41,7 +42,8 @@ export const getProduct = async (id) => {
     const req = await api.get(`/${id}`);
     return req.data;
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+    return { success: false, message: error.message };
   }
 }
 
@@ -50,7 +52,8 @@ export const getProductForProfile = async () => {
     const req = await api.get('/profile');
     return req.data;
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+    return { success: false, message: error.message };
   }
 }
 
@@ -59,7 +62,8 @@ export const getProductsOfCategory = async (id) => {
     const req = await api.get(`/category/${id}`);
     return req.data;
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+    return { success: false, message: error.message };
   }
 }
 
@@ -68,6 +72,6 @@ export const getRelatedProducts = async (id) => {
     const req = await api.get(`/related/${id}`);
     return req.data;
   } catch (error) {
-    console.log(error);
+    return { success: false, message: error.message };
   }
 }

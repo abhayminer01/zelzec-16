@@ -25,6 +25,11 @@ import { useNavigate } from 'react-router-dom';
 export default function HomePage() {
   const [category, setCategory] = useState([]);
   const [products, setProducts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
+
   const { isLoginOpen, isRegisterOpen, openLogin, closeLogin } = useModal();
   const { step, nextStep, clearStep } = useSell();
   const { isAuthenticated } = useAuth();
@@ -32,8 +37,10 @@ export default function HomePage() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    const initialLimit = window.innerWidth < 768 ? 8 : 50;
+    setLimit(initialLimit);
+    fetchProducts(1, initialLimit);
     fetchPrimaryCategories();
-    fetchProducts();
     incrementVisitor();
   }, []);
 
@@ -41,19 +48,39 @@ export default function HomePage() {
     try {
       const res = await visitorCount();
     } catch (error) {
-      console.log(error)
+      // Silent error
     }
   }
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (currentPage = 1, currentLimit = 50) => {
+    if (loading) return;
+    setLoading(true);
     try {
-      const res = await getAllProducts();
+      const res = await getAllProducts({ page: currentPage, limit: currentLimit });
       if (res.success) {
-        setProducts(res.data);
+        if (currentPage === 1) {
+          setProducts(res.data);
+        } else {
+          setProducts(prev => [...prev, ...res.data]);
+        }
+        // Assuming API returns less than limit if no more data, or we can check length
+        if (res.data.length < currentLimit) {
+          setHasMore(false);
+        } else {
+          setHasMore(true);
+        }
       }
     } catch (error) {
-      console.log(error);
+      //   console.log(error);
+    } finally {
+      setLoading(false);
     }
+  }
+
+  const handleShowMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchProducts(nextPage, 20); // Load 20 more on each click
   }
 
   const fetchPrimaryCategories = async () => {
@@ -107,7 +134,9 @@ export default function HomePage() {
         <h1 className='text-[18px] md:text-[20px] font-semibold text-left'>Browse Categories</h1>
         <div className='grid grid-cols-3 md:flex md:justify-center gap-3 md:gap-6 mt-5'>
           {category.map((item, index) => {
-            const Icon = Icons[item.icon];
+            let Icon = Icons[item.icon];
+            if (item.title === 'Pets') Icon = Icons.PawPrint;
+
             return (
               <div onClick={() => handleCategoryClick(item._id)} key={index} className='border px-4 py-4 md:px-8 md:py-4 w-full md:w-[250px] flex flex-col justify-center align-middle items-center border-border rounded-lg hover:text-primary transition hover:border-primary' >
                 {Icon && <Icon className="size-7 md:size-7 text-primary mb-1" />}
@@ -126,65 +155,15 @@ export default function HomePage() {
             <p className="text-sm text-gray-500 mt-1">Discover amazing products</p>
           </div>
 
-          {products.length === 0 ? (
+          {products.length === 0 && !loading ? (
             <div className="text-center py-16">
               <Icons.Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
               <p className="text-gray-500 text-lg">No products found</p>
             </div>
           ) : (
             <>
-              {/* Mobile View */}
-              <div className="md:hidden">
-                <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory">
-                  {products.map((p) => {
-                    const Icon = Icons[p.category?.icon] || Icons.Package;
-
-                    return (
-                      <div
-                        key={p._id}
-                        onClick={() => handleCardClick(p._id)}
-                        className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer min-w-[280px] snap-start"
-                      >
-                        <div className="relative w-full h-48 bg-gray-100">
-                          <img
-                            src={`${import.meta.env.VITE_BACKEND_URL}/uploads/${p.images?.[0]?.filename}`}
-                            alt={p.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-
-                        <div className="p-4">
-                          <h2 className="text-base font-semibold text-gray-900 mb-2 line-clamp-1">
-                            {p.title}
-                          </h2>
-
-                          <p className="text-sm text-gray-600 line-clamp-2 mb-3 min-h-[40px]">
-                            {p.description}
-                          </p>
-
-                          <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
-                            {Icon && <Icon className="w-4 h-4 text-primary" />}
-                            <span>{p.category?.title}</span>
-                          </div>
-
-                          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                            <p className="text-xl font-bold text-primary">
-                              ₹{p.price.toLocaleString()}
-                            </p>
-                            <div className="flex items-center gap-1 text-xs text-gray-500">
-                              <Icons.MapPin className="w-3 h-3" />
-                              <span>{p.location.place || 'N/A'}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Desktop View */}
-              <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {/* Responsive Grid View */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {products.map((p) => {
                   const Icon = Icons[p.category?.icon] || Icons.Package;
 
@@ -196,7 +175,7 @@ export default function HomePage() {
                     >
                       <div className="relative w-full h-52 bg-gray-100 overflow-hidden">
                         <img
-                          src={`${import.meta.env.VITE_BACKEND_URL}${p.images?.[0]?.url}`}
+                          src={p.images?.[0]?.url ? `${import.meta.env.VITE_BACKEND_URL}${p.images[0].url}` : `${import.meta.env.VITE_BACKEND_URL}/uploads/${p.images?.[0]?.filename}`}
                           alt={p.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
@@ -232,6 +211,26 @@ export default function HomePage() {
                   );
                 })}
               </div>
+
+              {/* Show More Button */}
+              {hasMore && (
+                <div className="flex justify-center mt-12">
+                  <button
+                    onClick={handleShowMore}
+                    disabled={loading}
+                    className="px-8 py-3 bg-white border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
+                        Loading...
+                      </>
+                    ) : (
+                      'Show More Products'
+                    )}
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>

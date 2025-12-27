@@ -150,6 +150,11 @@ export default function ProductPage() {
         );
     }
 
+    const isVehicle = (() => {
+        const catTitle = product.category?.title || (typeof product.category === 'string' ? product.category : '') || '';
+        return ['car', 'vehicle', 'motor', 'bike', 'scooter'].some(k => catTitle.toLowerCase().includes(k));
+    })();
+
     return (
         <div className="w-full bg-gray-50/50 min-h-screen">
             <Toaster position="top-right" />
@@ -189,27 +194,25 @@ export default function ProductPage() {
                     <div className="flex flex-col md:flex-row justify-between gap-12 lg:gap-24">
                         <div className="md:w-7/12 lg:w-2/3 space-y-6">
                             <div>
-                                <div className="flex items-start justify-between mb-4">
-                                    <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 leading-tight">{product.title}</h1>
-                                    {/* Simple logic for premium badge, can be replaced with real data */}
-                                    {product.price > 1000000 && (
-                                        <span className="bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest border border-amber-200">Premium</span>
-                                    )}
-                                </div>
+
 
                                 <div className="flex flex-wrap items-center gap-4 mb-8">
                                     <div className="flex items-center gap-2 text-gray-600 bg-gray-50 px-3 py-1.5 rounded-md border border-gray-100 text-xs font-semibold uppercase tracking-wide">
                                         <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                                        <span>{new Date(product.createdAt).getFullYear()}</span>
+                                        <span>{product.form_data?.year || product.form_data?.Year || new Date(product.createdAt).getFullYear()}</span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-gray-600 bg-gray-50 px-3 py-1.5 rounded-md border border-gray-100 text-xs font-semibold uppercase tracking-wide">
-                                        <Gauge className="w-3.5 h-3.5 text-gray-400" />
-                                        <span>{product.form_data?.km_driven || product.form_data?.KMDriven || product.form_data?.['KM Driven'] || 'N/A'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-gray-600 bg-gray-50 px-3 py-1.5 rounded-md border border-gray-100 text-xs font-semibold uppercase tracking-wide">
-                                        <Fuel className="w-3.5 h-3.5 text-gray-400" />
-                                        <span>{product.form_data?.fuel || product.form_data?.Fuel || 'N/A'}</span>
-                                    </div>
+                                    {isVehicle && (
+                                        <>
+                                            <div className="flex items-center gap-2 text-gray-600 bg-gray-50 px-3 py-1.5 rounded-md border border-gray-100 text-xs font-semibold uppercase tracking-wide">
+                                                <Gauge className="w-3.5 h-3.5 text-gray-400" />
+                                                <span>{product.form_data?.km_driven || product.form_data?.KMDriven || product.form_data?.['KM Driven'] || 'N/A'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-gray-600 bg-gray-50 px-3 py-1.5 rounded-md border border-gray-100 text-xs font-semibold uppercase tracking-wide">
+                                                <Fuel className="w-3.5 h-3.5 text-gray-400" />
+                                                <span>{product.form_data?.fuel || product.form_data?.Fuel || 'N/A'}</span>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                                 <hr className="border-gray-100" />
                             </div>

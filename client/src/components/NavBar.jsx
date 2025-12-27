@@ -1,6 +1,6 @@
 // src/components/NavBar.jsx
 import React, { useEffect, useState, useRef } from 'react';
-import { MessageSquareText, Search, UserCircleIcon, LogOut, Settings, User } from "lucide-react";
+import { MessageSquareText, Search, UserCircleIcon, LogOut, Settings, User, Package } from "lucide-react";
 import { checkAuth, getUser, logoutUser } from '../services/auth';
 import { useAuth } from '../contexts/AuthContext';
 import { useModal } from '../contexts/ModalContext';
@@ -10,6 +10,7 @@ import { useChat } from '../contexts/ChatContext';
 import { useSettings } from '../contexts/SettingsContext';
 
 import { getAllProducts } from '../services/product-api';
+import { getPrimaryCategories } from '../services/category-api';
 
 export default function NavBar() {
   const navigate = useNavigate();
@@ -21,7 +22,22 @@ export default function NavBar() {
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const [categories, setCategories] = useState([]);
 
+  useEffect(() => {
+    fetchPrimaryCategories();
+  }, []);
+
+  const fetchPrimaryCategories = async () => {
+    try {
+      const res = await getPrimaryCategories();
+      if (res.success) {
+        setCategories(res.data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
   // Search State
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -222,6 +238,19 @@ export default function NavBar() {
 
                       <button
                         onClick={() => {
+                          navigate('/myads');
+                          setIsDropdownOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary rounded-xl flex items-center gap-3 transition-all group"
+                      >
+                        <div className="p-1.5 rounded-lg bg-gray-100 text-gray-500 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                          <Package size={16} />
+                        </div>
+                        My Ads
+                      </button>
+
+                      <button
+                        onClick={() => {
                           openSettings();
                           setIsDropdownOpen(false);
                         }}
@@ -290,19 +319,17 @@ export default function NavBar() {
         </div>
       </div>
 
+      {/* Secondary Nav for Categories */}
       <div className="hidden md:flex h-11 justify-center items-center bg-[#F6F1FF] border-b border-[#E9D5FF]/30">
         <div className="flex items-center gap-8">
-          {[
-            'Buy & Sell', 'Vehicles', 'Real Estate', 'Jobs', 'Services',
-            'Mobile & Electronics', 'Education', 'Pets', 'Matrimony'
-          ].map((item) => (
-            <a
-              key={item}
-              href="#"
+          {categories.map((item) => (
+            <div
+              key={item._id}
+              onClick={() => navigate(`/category/${item._id}`)}
               className="text-[11px] font-bold text-gray-600 hover:text-[#7C5CB9] uppercase tracking-widest transition-colors cursor-pointer"
             >
-              {item}
-            </a>
+              {item.title}
+            </div>
           ))}
         </div>
       </div>

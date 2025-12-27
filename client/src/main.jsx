@@ -13,6 +13,7 @@ import ProductPage from './pages/ProductPage';
 import ProfilePage from './pages/ProfilePage';
 import AccountPage from './pages/AccountPage';
 import SearchPage from './pages/SearchPage';
+import MyAdsPage from './pages/MyAdsPage';
 import { SettingsProvider } from './contexts/SettingsContext';
 import SettingsSidebar from './components/SettingsSidebar';
 
@@ -40,6 +41,7 @@ createRoot(document.getElementById('root')).render(
                     <Route path='/account' element={<AccountPage />} />
                     <Route path='/catalogue' element={<CataloguePage />} />
                     <Route path='/category/:id' element={<CataloguePage />} />
+                    <Route path='/myads' element={<MyAdsPage />} />
                   </Routes>
                   <div className="hidden md:block">
                     {/* Multi-window Chat Container */}

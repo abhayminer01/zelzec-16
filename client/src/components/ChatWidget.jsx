@@ -1,8 +1,8 @@
-// src/components/ChatWidget.jsx
 import React, { useRef, useEffect } from 'react';
 import { useChat } from '../contexts/ChatContext';
 import { getHistory, sendMessage } from '../services/chat-api';
 import { toast } from 'sonner';
+import { Check, CheckCheck } from 'lucide-react';
 
 const ChatWidget = ({ chatId, style, index }) => {
     const { chatState, updateMessages, updateText, closeChat, toggleMinimize, appendMessage } = useChat();
@@ -173,12 +173,21 @@ const ChatWidget = ({ chatId, style, index }) => {
                                 return (
                                     <div
                                         key={msg._id || msg.createdAt}
-                                        className={`mb-2 max-w-[85%] p-2.5 rounded-xl text-sm break-words ${isOwn
-                                            ? 'ml-auto bg-[#8069AE] text-white rounded-br-none'
-                                            : 'mr-auto bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-none'
+                                        className={`mb-2 max-w-[85%] p-2.5 rounded-xl text-sm break-words flex flex-col ${isOwn
+                                            ? 'ml-auto bg-[#8069AE] text-white rounded-br-none items-end'
+                                            : 'mr-auto bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-none items-start'
                                             }`}
                                     >
-                                        {msg.text}
+                                        <span>{msg.text}</span>
+                                        {isOwn && (
+                                            <span className="ml-1 -mb-1 mt-0.5 self-end">
+                                                {msg.read ? (
+                                                    <CheckCheck className="w-3.5 h-3.5 text-blue-200" />
+                                                ) : (
+                                                    <Check className="w-3.5 h-3.5 text-gray-300" />
+                                                )}
+                                            </span>
+                                        )}
                                     </div>
                                 );
                             })

@@ -3,7 +3,7 @@ import React, { useRef, useEffect } from 'react';
 import { useChat } from '../contexts/ChatContext';
 import { getHistory, sendMessage } from '../services/chat-api';
 import { toast } from 'sonner';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Check, CheckCheck } from 'lucide-react';
 
 const MobileChatWidget = () => {
   const { chatState, updateMessages, updateText, closeChat, appendMessage } = useChat();
@@ -139,9 +139,16 @@ const MobileChatWidget = () => {
                 >
                   {msg.text}
                 </div>
-                <span className={`text-[10px] text-gray-400 mt-1 px-1 ${isOwn ? 'text-right' : 'text-left'}`}>
-                  {time}
-                </span>
+                <div className={`text-[10px] text-gray-400 mt-1 px-1 flex items-center gap-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                  <span>{time}</span>
+                  {isOwn && (
+                    msg.read ? (
+                      <CheckCheck className="w-3 h-3 text-blue-500" />
+                    ) : (
+                      <Check className="w-3 h-3 text-gray-400" />
+                    )
+                  )}
+                </div>
               </div>
             );
           })

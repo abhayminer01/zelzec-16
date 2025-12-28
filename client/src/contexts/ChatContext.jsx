@@ -118,10 +118,33 @@ export const ChatProvider = ({ children }) => {
             }
         });
 
+        socket.on("messages_read", ({ chatId, readerId }) => {
+            setChatState(prev => {
+                // If I am the reader, I don't need to update my UI to show *I* read them (unless distinct styling)
+                // But generally, this event is useful to show *Sender* that *Reader* read them.
+
+                // We just mark all messages in this chat session as read = true
+                const session = prev.chatSessions[chatId];
+                if (!session) return prev; // If not loaded, nothing to update
+
+                return {
+                    ...prev,
+                    chatSessions: {
+                        ...prev.chatSessions,
+                        [chatId]: {
+                            ...session,
+                            messages: session.messages.map(m => ({ ...m, read: true }))
+                        }
+                    }
+                };
+            });
+        });
+
         return () => {
             socket.off("receive_message");
             socket.off("typing");
             socket.off("stop_typing");
+            socket.off("messages_read");
         };
     }, [socket]);
 

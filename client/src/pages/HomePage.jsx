@@ -179,7 +179,7 @@ export default function HomePage() {
           ) : (
             <>
               {/* Responsive Grid View */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
                 {products.map((p) => {
                   const Icon = Icons[p.category?.icon] || Icons.Package;
 
@@ -187,40 +187,41 @@ export default function HomePage() {
                     <div
                       onClick={() => handleCardClick(p._id)}
                       key={p._id}
-                      className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl hover:border-gray-300 transition-all duration-300 cursor-pointer"
+                      className="group bg-white border border-gray-200 rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:border-gray-300 transition-all duration-300 cursor-pointer hover:-translate-y-1"
                     >
-                      <div className="relative w-full h-52 bg-gray-100 overflow-hidden">
+                      <div className="relative w-full h-36 sm:h-52 bg-gray-100 overflow-hidden">
                         <img
                           src={p.images?.[0]?.url ? `${import.meta.env.VITE_BACKEND_URL}${p.images[0].url}` : `${import.meta.env.VITE_BACKEND_URL}/uploads/${p.images?.[0]?.filename}`}
                           alt={p.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         />
+                        {/* Location Badge */}
+                        {p.location?.place && (
+                          <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-md text-white text-[10px] sm:text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <Icons.MapPin size={10} />
+                            <span className="font-medium truncate max-w-[80px] sm:max-w-[120px]">{p.location.place}</span>
+                          </div>
+                        )}
                       </div>
 
-                      <div className="p-4">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">
+                      <div className="p-3 sm:p-4">
+                        <div className="flex justify-between items-start mb-1">
+                          <p className="text-lg sm:text-2xl font-bold text-primary">
+                            ₹{p.price.toLocaleString()}
+                          </p>
+                        </div>
+
+                        <h2 className="text-sm sm:text-lg font-semibold text-gray-900 mb-1 line-clamp-1 group-hover:text-primary transition-colors">
                           {p.title}
                         </h2>
 
-                        <p className="text-sm text-gray-600 line-clamp-2 mb-4 min-h-[40px]">
+                        <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 mb-3 min-h-[2.5em]">
                           {p.description}
                         </p>
 
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2 text-sm text-gray-500">
-                            {Icon && <Icon className="w-4 h-4 text-primary" />}
-                            <span>{p.category?.title}</span>
-                          </div>
-
-                          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                            <p className="text-2xl font-bold text-primary">
-                              ₹{p.price.toLocaleString()}
-                            </p>
-                            <div className="flex items-center gap-1 text-sm text-gray-500">
-                              <Icons.MapPin className="w-4 h-4" />
-                              <span className="text-xs">{p.location.place || 'N/A'}</span>
-                            </div>
-                          </div>
+                        <div className="pt-2 border-t border-gray-50 flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+                          {Icon && <Icon className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />}
+                          <span className="truncate">{p.category?.title}</span>
                         </div>
                       </div>
                     </div>

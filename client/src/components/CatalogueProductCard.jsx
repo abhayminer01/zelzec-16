@@ -88,11 +88,11 @@ const CatalogueProductCard = ({ product, navigate, onFavoriteChange }) => {
 
 
     return (
-        <div className="bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col sm:flex-row group h-auto sm:h-[180px] relative">
+        <div className="bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-row group h-[140px] sm:h-[180px] relative">
 
             {/* Image Section */}
             <div
-                className="w-full sm:w-[260px] h-[200px] sm:h-full relative flex-shrink-0 cursor-pointer overflow-hidden"
+                className="w-[130px] sm:w-[260px] h-full relative flex-shrink-0 cursor-pointer overflow-hidden"
                 onClick={() => navigate(`/product/${product._id}`)}
             >
                 <img
@@ -116,11 +116,11 @@ const CatalogueProductCard = ({ product, navigate, onFavoriteChange }) => {
             </div>
 
             {/* Content Section */}
-            <div className="flex-1 p-4 flex flex-col justify-between relative">
+            <div className="flex-1 p-3 sm:p-4 flex flex-col justify-between relative min-w-0">
                 <div className="flex justify-between items-start">
-                    <div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-1">{formatPrice(product.price)}</h3>
-                        <p className="text-xs text-gray-500 font-medium mb-1 uppercase tracking-wide">
+                    <div className="min-w-0 flex-1 mr-2">
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-0.5 sm:mb-1">{formatPrice(product.price)}</h3>
+                        <p className="hidden sm:block text-xs text-gray-500 font-medium mb-1 uppercase tracking-wide truncate">
                             {(() => {
                                 const catTitle = product.category?.title || '';
                                 const brand = product.form_data?.Brand || product.form_data?.brand;
@@ -140,7 +140,7 @@ const CatalogueProductCard = ({ product, navigate, onFavoriteChange }) => {
                             })()}
                         </p>
                         <h4
-                            className="text-sm font-medium text-gray-800 line-clamp-2 hover:text-indigo-600 cursor-pointer transition-colors"
+                            className="text-sm font-medium text-gray-800 line-clamp-2 hover:text-indigo-600 cursor-pointer transition-colors leading-tight"
                             onClick={() => navigate(`/product/${product._id}`)}
                         >
                             {product.title}
@@ -148,12 +148,12 @@ const CatalogueProductCard = ({ product, navigate, onFavoriteChange }) => {
                     </div>
 
                     {/* Share Button & Modal */}
-                    <div className="relative">
+                    <div className="relative flex-shrink-0">
                         <button
                             className="text-gray-400 hover:text-indigo-600 transition-colors p-1"
                             onClick={handleShare}
                         >
-                            <Share2 size={18} />
+                            <Share2 size={16} sm:size={18} />
                         </button>
 
                         {showShare && (
@@ -182,28 +182,22 @@ const CatalogueProductCard = ({ product, navigate, onFavoriteChange }) => {
                 </div>
 
                 {/* Metadata Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-2 gap-x-4 mt-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-1 sm:gap-y-2 gap-x-2 sm:gap-x-4 mt-2">
                     {year && (
                         <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                            <Calendar size={13} className="text-gray-400" />
+                            <Calendar size={12} className="text-gray-400" />
                             <span>{year}</span>
                         </div>
                     )}
                     {kmDriven && (
                         <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                            <Gauge size={13} className="text-gray-400" />
-                            <span>{kmDriven} km</span>
-                        </div>
-                    )}
-                    {fuel && (
-                        <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                            <span className="text-gray-400 text-[10px]">⛽</span>
-                            <span>{fuel}</span>
+                            <Gauge size={12} className="text-gray-400" />
+                            <span className="truncate">{kmDriven} km</span>
                         </div>
                     )}
                     {product.location?.place && (
-                        <div className="flex items-center gap-1.5 text-xs text-gray-600 col-span-2 sm:col-span-1">
-                            <MapPin size={13} className="text-gray-400" />
+                        <div className="flex items-center gap-1.5 text-xs text-gray-600 sm:col-span-1">
+                            <MapPin size={12} className="text-gray-400" />
                             <span className="truncate">{product.location.place}</span>
                         </div>
                     )}

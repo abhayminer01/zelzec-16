@@ -59,9 +59,16 @@ const ChatSidebar = () => {
     if (!isSidebarOpen) return null;
 
     const filteredChats = chats.filter(chat => {
-        const seller = chat.product?.user;
-        const sellerName = seller?.full_name?.trim() || 'Seller';
-        return sellerName.toLowerCase().includes(search.toLowerCase());
+        const otherUser = chat.buyer?._id === currentUserId ? chat.seller : chat.buyer;
+        const partnerName = otherUser?.full_name?.trim() || 'User';
+        const productTitle = chat.product?.title || '';
+        const lastMessage = chat.lastMessage || '';
+
+        const lowerSearch = search.toLowerCase();
+
+        return partnerName.toLowerCase().includes(lowerSearch) ||
+            productTitle.toLowerCase().includes(lowerSearch) ||
+            lastMessage.toLowerCase().includes(lowerSearch);
     });
 
     return (

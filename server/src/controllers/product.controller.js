@@ -1,5 +1,6 @@
 const Product = require("../models/product.model");
 const User = require("../models/user.model");
+const Category = require("../models/category.model");
 
 const createProduct = async (req, res) => {
   try {
@@ -56,9 +57,20 @@ const getAllProducts = async (req, res) => {
     // 1️⃣ Build Query Object
     const query = {};
 
-    // Search (Text search on title & description)
+    // Search (Text search on title, description, form_data OR Category Name)
     if (search) {
-      query.$text = { $search: search };
+      // 1. Find categories matching the search term
+      const matchingCategories = await Category.find({
+        title: { $regex: search, $options: "i" }
+      }).select("_id");
+
+      const matchingCategoryIds = matchingCategories.map(c => c._id);
+
+      // 2. Build $or query
+      query.$or = [
+        { $text: { $search: search } }, // Matches title, desc, form_data via Wildcard Index
+        { category: { $in: matchingCategoryIds } } // Matches products in those categories
+      ];
     }
 
     // Category Filter

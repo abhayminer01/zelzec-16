@@ -41,7 +41,7 @@ productSchema.index({ category: 1 });
 productSchema.index({ user: 1 });
 productSchema.index({ price: 1 });
 productSchema.index({ "location.place": 1 });
-productSchema.index({ title: "text", description: "text" }); // Text search index
+productSchema.index({ "$**": "text" }); // Wildcard Text search index
 
 const Product = mongoose.model('Product', productSchema);
 module.exports = Product;

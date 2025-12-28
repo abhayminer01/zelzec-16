@@ -1,6 +1,6 @@
 // src/components/NavBar.jsx
 import React, { useEffect, useState, useRef } from 'react';
-import { MessageSquareText, Search, UserCircleIcon, LogOut, Settings, User, Package } from "lucide-react";
+import { MessageSquareText, Search, UserCircleIcon, LogOut, Settings, User, Package, Heart } from "lucide-react";
 import { checkAuth, getUser, logoutUser } from '../services/auth';
 import { useAuth } from '../contexts/AuthContext';
 import { useModal } from '../contexts/ModalContext';
@@ -277,6 +277,19 @@ export default function NavBar() {
                           <Package size={16} />
                         </div>
                         My Ads
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          navigate('/favorites');
+                          setIsDropdownOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary rounded-xl flex items-center gap-3 transition-all group"
+                      >
+                        <div className="p-1.5 rounded-lg bg-gray-100 text-gray-500 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                          <Heart size={16} />
+                        </div>
+                        Favorites
                       </button>
 
                       <button

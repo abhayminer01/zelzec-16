@@ -25,7 +25,11 @@ const userSchema = new mongoose.Schema({
     },
     otpExpires: {
         type: Date
-    }
+    },
+    favorites: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product'
+    }]
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);

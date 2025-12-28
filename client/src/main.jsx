@@ -22,6 +22,7 @@ import ChatContainer from './components/ChatContainer';
 import CataloguePage from './pages/CataloguePage';
 import MobileChatSidebar from './components/MobileChatSidebar';
 import MobileChatWidget from './components/MobileChatWidget';
+import FavoritesPage from './pages/FavoritesPage';
 // ... rest of imports
 
 createRoot(document.getElementById('root')).render(
@@ -42,6 +43,7 @@ createRoot(document.getElementById('root')).render(
                     <Route path='/catalogue' element={<CataloguePage />} />
                     <Route path='/category/:id' element={<CataloguePage />} />
                     <Route path='/myads' element={<MyAdsPage />} />
+                    <Route path='/favorites' element={<FavoritesPage />} />
                   </Routes>
                   <div className="hidden md:block">
                     {/* Multi-window Chat Container */}

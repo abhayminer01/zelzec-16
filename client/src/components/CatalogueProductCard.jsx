@@ -1,9 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, MapPin, Calendar, Gauge, Share2 } from 'lucide-react';
 
-const CatalogueProductCard = ({ product, navigate }) => {
+import { toggleFavorite } from '../services/auth';
+import { useAuth } from '../contexts/AuthContext';
+import { toast } from 'sonner';
+
+const CatalogueProductCard = ({ product, navigate, onFavoriteChange }) => {
     const [showShare, setShowShare] = useState(false);
     const [copied, setCopied] = useState(false);
+    const { userData, checkAuthStatus } = useAuth();
+    const [isFavorite, setIsFavorite] = useState(false);
+
+    useEffect(() => {
+        if (userData?.favorites?.includes(product._id)) {
+            setIsFavorite(true);
+        } else {
+            setIsFavorite(false);
+        }
+    }, [userData, product._id]);
+
+    const handleFavorite = async (e) => {
+        e.stopPropagation();
+        if (!userData) {
+            toast.error("Please login to add favorites");
+            return;
+        }
+
+        // Optimistic update
+        setIsFavorite(!isFavorite);
+
+        try {
+            const res = await toggleFavorite(product._id);
+            if (res.success) {
+                toast.success(res.message);
+                checkAuthStatus(); // Refresh user data to update favorites list in context
+                if (onFavoriteChange) {
+                    onFavoriteChange();
+                }
+            } else {
+                // Revert on failure
+                setIsFavorite(!isFavorite);
+                toast.error(res.message);
+            }
+        } catch (error) {
+            setIsFavorite(!isFavorite);
+            console.error(error);
+        }
+    };
 
     // Extract specific dynamic fields if they exist for better display
     const year = product.form_data?.Year || product.form_data?.year;
@@ -64,8 +107,11 @@ const CatalogueProductCard = ({ product, navigate }) => {
                     <span className="font-medium">{product.images?.length || 0}</span>
                 </div>
 
-                <button className="absolute top-2 right-2 p-1.5 bg-white/90 rounded-full text-gray-400 hover:text-red-500 hover:bg-white transition-colors z-10" onClick={(e) => { e.stopPropagation(); /* Add to fav logic */ }}>
-                    <Heart size={16} />
+                <button
+                    className={`absolute top-2 right-2 p-1.5 rounded-full transition-colors z-10 ${isFavorite ? 'bg-white text-red-500 hover:bg-gray-100' : 'bg-white/90 text-gray-400 hover:text-red-500 hover:bg-white'}`}
+                    onClick={handleFavorite}
+                >
+                    <Heart size={16} fill={isFavorite ? "currentColor" : "none"} />
                 </button>
             </div>
 

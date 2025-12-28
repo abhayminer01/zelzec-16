@@ -1,7 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const ProductInfoCard = ({ product, onChatClick, onMakeOfferClick, isOwner, currentUserId }) => {
+import { Heart } from 'lucide-react';
+
+const ProductInfoCard = ({ product, onChatClick, onMakeOfferClick, isOwner, currentUserId, isFavorite, onFavoriteToggle }) => {
     const navigate = useNavigate();
     const seller = product.user || {};
     const price = product.price;
@@ -29,6 +31,16 @@ const ProductInfoCard = ({ product, onChatClick, onMakeOfferClick, isOwner, curr
 
     return (
         <div className="w-full h-full bg-[#F3E8FF] p-8 rounded-[32px] shadow-sm relative overflow-hidden flex flex-col justify-between">
+            {/* Favorite Button */}
+            {!isOwner && (
+                <button
+                    onClick={onFavoriteToggle}
+                    className="absolute top-6 right-6 p-2.5 bg-white/50 hover:bg-white rounded-full transition-all text-gray-500 hover:text-red-500 z-20"
+                    title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+                >
+                    <Heart size={20} fill={isFavorite ? "currentColor" : "none"} className={isFavorite ? "text-red-500" : ""} />
+                </button>
+            )}
 
             {/* Price Section */}
             <div className="flex flex-col items-center mb-8">

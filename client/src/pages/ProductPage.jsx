@@ -71,6 +71,45 @@ export default function ProductPage() {
         checkOwner();
     }, [product]);
 
+    // Favorites Logic
+    const [isFavorite, setIsFavorite] = useState(false);
+    const { userData, checkAuthStatus } = useAuth(); // Ensure userData is available
+
+    useEffect(() => {
+        if (userData?.favorites?.includes(product?._id)) {
+            setIsFavorite(true);
+        } else {
+            setIsFavorite(false);
+        }
+    }, [userData, product]);
+
+    const handleFavorite = async (e) => {
+        if (e) e.stopPropagation();
+        if (!isAuthenticated) {
+            toast.error("Please login to add favorites");
+            openLogin();
+            return;
+        }
+
+        // Optimistic update
+        setIsFavorite(!isFavorite);
+
+        try {
+            const { toggleFavorite } = await import('../services/auth'); // Lazy import or move to top
+            const res = await toggleFavorite(product._id);
+            if (res.success) {
+                toast.success(res.message);
+                checkAuthStatus();
+            } else {
+                setIsFavorite(!isFavorite); // Revert
+                toast.error(res.message);
+            }
+        } catch (error) {
+            setIsFavorite(!isFavorite);
+            console.error(error);
+        }
+    };
+
     const handleContact = async (initialMessage = '') => {
         if (!isAuthenticated) {
             toast.info('You need to be logged in', {
@@ -183,6 +222,8 @@ export default function ProductPage() {
                         onMakeOfferClick={handleMakeOffer}
                         isOwner={isOwner}
                         currentUserId={userId}
+                        isFavorite={isFavorite}
+                        onFavoriteToggle={handleFavorite}
                     />
                 </div>
 

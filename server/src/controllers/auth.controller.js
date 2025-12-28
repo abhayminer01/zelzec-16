@@ -247,6 +247,49 @@ const deleteUser = async (req, res) => {
     }
 };
 
+const toggleFavorite = async (req, res) => {
+    try {
+        const { productId } = req.body;
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        const index = user.favorites.indexOf(productId);
+        if (index === -1) {
+            // Add to favorites
+            user.favorites.push(productId);
+            await user.save();
+            return res.status(200).json({ success: true, message: "Added to favorites", isFavorite: true });
+        } else {
+            // Remove from favorites
+            user.favorites.splice(index, 1);
+            await user.save();
+            return res.status(200).json({ success: true, message: "Removed from favorites", isFavorite: false });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, err: error.message });
+    }
+};
+
+const getFavorites = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).populate({
+            path: 'favorites',
+            populate: { path: 'category' } // Deep populate category if needed for display
+        });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        res.status(200).json({ success: true, data: user.favorites });
+    } catch (error) {
+        res.status(500).json({ success: false, err: error.message });
+    }
+};
+
 module.exports = {
     checkAuth,
     registerUser,
@@ -257,5 +300,7 @@ module.exports = {
     sendOtp,
     verifyOtp,
     resetPassword,
-    deleteUser
+    deleteUser,
+    toggleFavorite,
+    getFavorites
 }

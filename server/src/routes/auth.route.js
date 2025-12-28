@@ -15,4 +15,8 @@ router.post('/send-otp', authController.sendOtp);
 router.post('/verify-otp', authController.verifyOtp);
 router.post('/reset-password', authController.resetPassword);
 
+// Favorites Routes
+router.post('/favorites', userAuthMiddleware, authController.toggleFavorite);
+router.get('/favorites', userAuthMiddleware, authController.getFavorites);
+
 module.exports = router;

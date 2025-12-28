@@ -134,3 +134,27 @@ export const resetPassword = async (email, otp, newPassword) => {
         return error?.response?.data || { success: false, message: "Network error" };
     }
 }
+
+export const toggleFavorite = async (productId) => {
+    try {
+        const req = await api.post('/api/v1/auth/favorites', { productId }, {
+            withCredentials: true
+        });
+        return req.data;
+    } catch (error) {
+        console.log(error);
+        return error?.response?.data || { success: false, message: "Network error" };
+    }
+}
+
+export const getFavorites = async () => {
+    try {
+        const req = await api.get('/api/v1/auth/favorites', {
+            withCredentials: true
+        });
+        return req.data;
+    } catch (error) {
+        console.log(error);
+        return error?.response?.data || { success: false, message: "Network error" };
+    }
+}

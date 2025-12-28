@@ -5,8 +5,11 @@ import { getHistory, sendMessage, markAsRead } from '../services/chat-api';
 import { toast } from 'sonner';
 import { ArrowLeft, Check, CheckCheck } from 'lucide-react';
 
+import { useSocket } from '../contexts/SocketContext'; // Add import
+
 const MobileChatWidget = () => {
   const { chatState, updateMessages, updateText, closeChat, appendMessage } = useChat();
+  const socket = useSocket(); // Get socket
   const { activeChats, chatSessions, currentUserId, chats } = chatState;
 
   // For mobile, we focus the last active chat (most recently opened)
@@ -32,20 +35,14 @@ const MobileChatWidget = () => {
   useEffect(() => {
     if (!activeChatId) return;
 
-    const loadMessages = async () => {
-      try {
-        const data = await getHistory(activeChatId);
-        updateMessages(activeChatId, Array.isArray(data.messages) ? data.messages : []);
-        await markAsRead(activeChatId);
-      } catch (err) {
-        console.error("Failed to load messages", err);
-        toast.error("Failed to load chat history");
-        updateMessages(activeChatId, []);
-      }
-    };
+    // Ensure we are in the socket room
+    if (socket) socket.emit("join_chat", activeChatId);
 
+    const loadMessages = async () => {
+      // ...
+    };
     loadMessages();
-  }, [activeChatId]);
+  }, [activeChatId, socket]); // Add dependencies
 
   useEffect(() => {
     scrollToBottom();

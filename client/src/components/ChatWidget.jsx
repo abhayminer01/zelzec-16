@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { useChat } from '../contexts/ChatContext';
+import { useSocket } from '../contexts/SocketContext';
 import { getHistory, sendMessage } from '../services/chat-api';
 import { toast } from 'sonner';
 import { Check, CheckCheck } from 'lucide-react';
@@ -7,6 +8,7 @@ import { Check, CheckCheck } from 'lucide-react';
 const ChatWidget = ({ chatId, style, index }) => {
     const { chatState, updateMessages, updateText, closeChat, toggleMinimize, appendMessage } = useChat();
     const { chats, currentUserId, chatSessions, activeChats } = chatState;
+    const socket = useSocket();
 
     // Get session data for THIS chat
     const session = chatSessions[chatId] || { messages: [], text: '', isTyping: false };
@@ -39,22 +41,22 @@ const ChatWidget = ({ chatId, style, index }) => {
     useEffect(() => {
         if (!chatId) return;
 
+        // Ensure we are in the socket room
+        if (socket) socket.emit("join_chat", chatId);
+
         const loadMessages = async () => {
-            // Only fetch if empty to avoid flicker? Or always refresh?
-            // If we have messages, assume they are up to date from socket or previous fetch?
-            // For now, simple fetch as before.
             try {
                 const data = await getHistory(chatId);
                 updateMessages(chatId, Array.isArray(data.messages) ? data.messages : []);
             } catch (err) {
                 console.error("Failed to load messages", err);
                 toast.error("Failed to load chat history");
-                updateMessages(chatId, []); // ensure array
+                updateMessages(chatId, []);
             }
         };
 
         loadMessages();
-    }, [chatId]); // Only when chatId changes (mount)
+    }, [chatId, socket]);
 
     // Scroll effects
     useEffect(() => {

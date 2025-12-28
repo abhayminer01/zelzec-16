@@ -1,7 +1,7 @@
 // src/components/MobileChatWidget.jsx
 import React, { useRef, useEffect } from 'react';
 import { useChat } from '../contexts/ChatContext';
-import { getHistory, sendMessage } from '../services/chat-api';
+import { getHistory, sendMessage, markAsRead } from '../services/chat-api';
 import { toast } from 'sonner';
 import { ArrowLeft, Check, CheckCheck } from 'lucide-react';
 
@@ -36,6 +36,7 @@ const MobileChatWidget = () => {
       try {
         const data = await getHistory(activeChatId);
         updateMessages(activeChatId, Array.isArray(data.messages) ? data.messages : []);
+        await markAsRead(activeChatId);
       } catch (err) {
         console.error("Failed to load messages", err);
         toast.error("Failed to load chat history");

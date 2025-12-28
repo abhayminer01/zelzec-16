@@ -37,6 +37,14 @@ export const ChatProvider = ({ children }) => {
 
             // 1. Update session messages if chat is open
             if (isChatOpen) {
+                // If chat is open and message is from other user, mark it as read immediately
+                const myId = currentUserIdRef.current;
+                if (message.sender?._id !== myId && message.sender !== myId) {
+                    markAsRead(message.chatId).catch(console.error);
+                    // Update the message itself to be read (optimistic for local view, though usually we care about own messages)
+                    message.read = true;
+                }
+
                 setChatState(prev => {
                     const session = prev.chatSessions[message.chatId] || { messages: [], text: '', isTyping: false };
 

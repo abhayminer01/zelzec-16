@@ -207,22 +207,39 @@ export default function AccountPage() {
                         {/* Left Sidebar: Profile Card & Navigation */}
                         <div className="w-full md:w-80 flex flex-col gap-6">
                             {/* Profile Card */}
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center">
-                                <div className="relative inline-block mx-auto mb-4">
-                                    <div className="w-28 h-28 rounded-full bg-[#8069AE]/10 flex items-center justify-center text-primary text-4xl font-bold border-4 border-white shadow-md">
-                                        {user?.full_name?.charAt(0)?.toUpperCase() || <User size={40} />}
+                            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden text-center group hover:shadow-xl transition-shadow">
+                                {/* Card Header Gradient */}
+                                <div className="h-32 bg-gradient-to-r from-[#604D85] to-[#8069AE] relative">
+                                    <div className="absolute inset-0 bg-black/10"></div>
+                                </div>
+
+                                <div className="px-6 pb-6 relative">
+                                    {/* Avatar */}
+                                    <div className="relative inline-block -mt-16 mb-4">
+                                        <div className="w-32 h-32 rounded-full bg-white p-1 shadow-lg">
+                                            <div className="w-full h-full rounded-full bg-[#f3f0ff] flex items-center justify-center text-[#8069AE] text-5xl font-bold border-4 border-white">
+                                                {user?.full_name?.charAt(0)?.toUpperCase() || <User size={48} />}
+                                            </div>
+                                        </div>
                                     </div>
 
-                                </div>
-                                <h2 className="text-xl font-bold text-gray-900">{user?.full_name || 'User'}</h2>
-                                <p className="text-sm text-gray-500 mb-4">{user?.email || 'No email'}</p>
-                                <div className="inline-flex items-center px-3 py-1 rounded-full bg-[#8069AE]/10 text-primary text-xs font-semibold">
-                                    Member since {new Date(user?.createdAt || Date.now()).getFullYear()}
+                                    {/* User Info */}
+                                    <h2 className="text-2xl font-bold text-gray-900 mb-1">{user?.full_name || 'User'}</h2>
+                                    <p className="text-gray-500 font-medium mb-6">{user?.email || 'No email'}</p>
+
+                                    <div className="flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 rounded-xl border border-gray-100 mx-auto w-fit">
+                                        <div className="p-1.5 bg-white rounded-full shadow-sm">
+                                            <Shield size={14} className="text-[#8069AE]" />
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-600">
+                                            Member since {new Date(user?.createdAt || Date.now()).getFullYear()}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
 
                             {/* Navigation Menu */}
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
                                 <nav className="flex flex-row md:flex-col overflow-x-auto md:overflow-visible no-scrollbar">
                                     <button
                                         onClick={() => setActiveTab('personal')}
@@ -244,7 +261,7 @@ export default function AccountPage() {
 
                         {/* Right Content Area */}
                         <div className="flex-1">
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
                                 {/* Header */}
                                 <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-white">
                                     <div>

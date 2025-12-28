@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import NavBar from '../components/NavBar';
 import MobileBottomNav from '../components/MobileBottomNav';
-import CatalogueProductCard from '../components/CatalogueProductCard';
+import FavoriteProductCard from '../components/FavoriteProductCard';
 import { getFavorites } from '../services/auth';
 import { useNavigate } from 'react-router-dom';
 import { Heart } from 'lucide-react';
@@ -35,49 +35,61 @@ export default function FavoritesPage() {
             <NavBar />
             <MobileBottomNav />
 
-            <div className="flex-1 max-w-[1280px] mx-auto px-4 py-8 w-full">
-                <div className="flex items-center gap-3 mb-8">
-                    <div className="bg-red-50 p-3 rounded-full">
-                        <Heart className="text-red-500 fill-red-500" size={24} />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">My Favorites</h1>
-                        <p className="text-sm text-gray-500">Manage your saved listings</p>
+            <main className="flex-1 pb-20 md:pb-8">
+                {/* Banner Section */}
+                <div className="h-48 bg-gradient-to-r from-[#604D85] to-[#8069AE] w-full relative">
+                    <div className="absolute inset-0 bg-black/5"></div>
+                    <div className="max-w-7xl mx-auto px-4 h-full flex items-center relative z-10 text-white">
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-2xl border border-white/20 shadow-lg">
+                                <Heart className="text-white fill-white" size={32} />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold text-white tracking-tight">My Favorites</h1>
+                                <p className="text-purple-100 font-medium opacity-90">Manage your saved listings</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center h-64 w-full">
-                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mb-4"></div>
-                        <p className="text-gray-500 text-sm">Loading your favorites...</p>
-                    </div>
-                ) : favorites.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {favorites.map((product) => (
-                            <CatalogueProductCard
-                                key={product._id}
-                                product={product}
-                                navigate={navigate}
-                                onFavoriteChange={() => {
-                                    setFavorites(prev => prev.filter(p => p._id !== product._id));
-                                }}
-                            />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
-                        <Heart className="w-16 h-16 mx-auto text-gray-200 mb-4" />
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No favorites yet</h3>
-                        <p className="text-gray-500 mb-6 max-w-sm mx-auto">Start browsing and save items you love to find them easily here later.</p>
-                        <button
-                            onClick={() => navigate('/catalogue')}
-                            className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm"
-                        >
-                            Browse Catalogue
-                        </button>
-                    </div>
-                )}
-            </div>
+                <div className="max-w-7xl mx-auto px-4 -mt-8 relative z-10">
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100 min-h-[400px]">
+                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#8069AE] border-t-transparent mb-4"></div>
+                            <p className="text-gray-500 font-medium">Loading your favorites...</p>
+                        </div>
+                    ) : favorites.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {favorites.map((product) => (
+                                <FavoriteProductCard
+                                    key={product._id}
+                                    product={product}
+                                    navigate={navigate}
+                                    onFavoriteChange={() => {
+                                        setFavorites(prev => prev.filter(p => p._id !== product._id));
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-24 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
+                            <div className="bg-[#8069AE]/10 p-6 rounded-full mb-6">
+                                <Heart className="w-16 h-16 text-[#8069AE]" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-2">No favorites yet</h3>
+                            <p className="text-gray-500 mb-8 max-w-sm mx-auto leading-relaxed">
+                                Start browsing our catalogue and save items you love to find them easily here later.
+                            </p>
+                            <button
+                                onClick={() => navigate('/catalogue')}
+                                className="px-8 py-3 bg-[#8069AE] text-white rounded-xl font-medium hover:bg-[#6A5299] transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2"
+                            >
+                                Browse Catalogue
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </main>
 
             <Footer />
         </div>

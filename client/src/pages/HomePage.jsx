@@ -16,7 +16,7 @@ import { getPrimaryCategories } from '../services/category-api';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import MobileBottomNav from '../components/MobileBottomNav';
-import { getAllProducts } from '../services/product-api'
+import { getAllProducts, getListedProducts } from '../services/product-api'
 import Footer from '../components/Footer'
 import { useAuth } from '../contexts/AuthContext'
 import { visitorCount } from '../services/auth'
@@ -94,12 +94,22 @@ export default function HomePage() {
     }
   }
 
-  const handlePostAdButton = () => {
+  const handlePostAdButton = async () => {
     if (!isAuthenticated) {
       openLogin();
     } else {
       if (step === 0) {
-        nextStep();
+        try {
+          const res = await getListedProducts();
+          if (res.success && res.data.length >= 8) {
+            alert("You have reached the maximum limit of 8 products.");
+          } else {
+            nextStep();
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Could not verify limits. Please try again.");
+        }
       } else {
         clearStep();
       }
@@ -135,8 +145,6 @@ export default function HomePage() {
         <div className='grid grid-cols-3 md:flex md:justify-center gap-3 md:gap-6 mt-5'>
           {category.map((item, index) => {
             let Icon = Icons[item.icon];
-            if (item.title === 'Pets') Icon = Icons.PawPrint;
-
             return (
               <div onClick={() => handleCategoryClick(item._id)} key={index} className='border px-4 py-4 md:px-8 md:py-4 w-full md:w-[250px] flex flex-col justify-center align-middle items-center border-border rounded-lg hover:text-primary transition hover:border-primary' >
                 {Icon && <Icon className="size-7 md:size-7 text-primary mb-1" />}

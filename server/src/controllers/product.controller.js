@@ -4,6 +4,12 @@ const Category = require("../models/category.model");
 
 const createProduct = async (req, res) => {
   try {
+    // Check product limit
+    const existingProductsCount = await Product.countDocuments({ user: req.user._id });
+    if (existingProductsCount >= 8) {
+      return res.status(400).json({ success: false, message: "You have reached the maximum limit of 8 products." });
+    }
+
     const {
       category,
       title,
@@ -12,6 +18,10 @@ const createProduct = async (req, res) => {
       price,
       location,
     } = req.body;
+
+    if (req.files.length > 6) {
+      return res.status(400).json({ success: false, message: "You can upload a maximum of 6 images." });
+    }
 
     const images = req.files.map((file) => ({
       url: `/uploads/${file.filename}`,
@@ -247,6 +257,114 @@ const getRelatedProducts = async (req, res) => {
   }
 };
 
+// DELETE PRODUCT
+const deleteProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+
+    const product = await Product.findOneAndDelete({ _id: id, user: userId });
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found or unauthorized" });
+    }
+
+    // Decrement user product count
+    await User.findByIdAndUpdate(userId, { $inc: { products: -1 } });
+
+    // Optional: Delete images from filesystem if needed (using fs.unlink)
+
+    res.status(200).json({ success: true, message: "Product deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    res.status(500).json({ success: false, message: "Server error deleting product" });
+  }
+};
+
+// UPDATE PRODUCT
+const updateProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+    let updates = { ...req.body };
+
+    // Prevent updating user or category directly if not intended
+    delete updates.user;
+
+    // Handle JSON parsing for multipart form data
+    if (typeof updates.form_data === 'string') {
+      try {
+        updates.form_data = JSON.parse(updates.form_data);
+      } catch (e) {
+        console.error("Error parsing form_data", e);
+      }
+    }
+
+    if (typeof updates.location === 'string') {
+      try {
+        updates.location = JSON.parse(updates.location);
+      } catch (e) {
+        console.error("Error parsing location", e);
+      }
+    }
+
+    // Handle Images
+    // 1. Parse existing_images (URLs of images to keep)
+    let existingImages = [];
+    if (updates.existing_images) {
+      if (typeof updates.existing_images === 'string') {
+        try {
+          existingImages = JSON.parse(updates.existing_images);
+        } catch (e) {
+          // If it's a single string URL not in JSON array format, wrap it
+          existingImages = [updates.existing_images];
+        }
+      } else if (Array.isArray(updates.existing_images)) {
+        existingImages = updates.existing_images;
+      } else {
+        existingImages = [updates.existing_images];
+      }
+    }
+
+    // 2. Process new files
+    let newImages = [];
+    if (req.files && req.files.length > 0) {
+      newImages = req.files.map((file) => ({
+        url: `/uploads/${file.filename}`,
+        filename: file.filename,
+      }));
+    }
+
+    // 3. Construct final images array if any image change is requested
+    // If existing_images or files are present, we assume an image update is intended
+    if (updates.existing_images || (req.files && req.files.length > 0)) {
+      // Transform existing images from URL strings/objects to schema format
+      const formattedExisting = existingImages.map(img => {
+        // If img is object with url, keep it. If string, allow it (legacy support might need schema adjustment)
+        // Schema expects { url: String, filename: String }
+        if (typeof img === 'string') return { url: img };
+        return img;
+      });
+      updates.images = [...formattedExisting, ...newImages];
+      delete updates.existing_images; // clean up aux field
+    }
+
+    const product = await Product.findOneAndUpdate(
+      { _id: id, user: userId },
+      { $set: updates },
+      { new: true }
+    );
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found or unauthorized" });
+    }
+
+    res.status(200).json({ success: true, data: product });
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(500).json({ success: false, message: "Server error updating product" });
+  }
+};
 
 
 module.exports = {
@@ -255,5 +373,7 @@ module.exports = {
   getProduct,
   getListedProducts,
   getProductsForCategory,
-  getRelatedProducts
+  getRelatedProducts,
+  deleteProduct,
+  updateProduct
 }

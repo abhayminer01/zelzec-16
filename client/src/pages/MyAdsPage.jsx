@@ -2,34 +2,64 @@ import React, { useEffect, useState } from 'react'
 import NavBar from '../components/NavBar'
 import Footer from '../components/Footer'
 import MobileBottomNav from '../components/MobileBottomNav'
-import { getProductForProfile } from '../services/product-api';
+import { getListedProducts, deleteProduct } from '../services/product-api';
 import { useNavigate } from 'react-router-dom';
 import { toast, Toaster } from 'sonner';
+import { Trash2, Edit2 } from 'lucide-react';
+import EditProductModal from '../components/EditProductModal';
 
 export default function MyAdsPage() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [editingProduct, setEditingProduct] = useState(null);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const res = await getProductForProfile();
-                if (res?.success) {
-                    setProducts(res.data);
-                } else {
-                    // Handle case where API might return success: false but no error throw
-                    console.error("Failed to fetch products", res);
-                }
-            } catch (error) {
-                console.error("Error loading ads:", error);
-                toast.error('Failed to load your ads');
-            } finally {
-                setLoading(false);
+    const fetchProducts = async () => {
+        try {
+            const res = await getListedProducts();
+            if (res?.success) {
+                setProducts(res.data);
+            } else {
+                console.error("Failed to fetch products", res);
             }
-        };
+        } catch (error) {
+            console.error("Error loading ads:", error);
+            toast.error('Failed to load your ads');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchProducts();
     }, []);
+
+    const handleDelete = async (e, id) => {
+        e.stopPropagation(); // Prevent navigation
+        const confirm = window.confirm("Are you sure you want to delete this ad? This action cannot be undone.");
+        if (!confirm) return;
+
+        const loader = toast.loading("Deleting ad...");
+        const res = await deleteProduct(id);
+        toast.dismiss(loader);
+
+        if (res.success) {
+            toast.success("Ad deleted successfully");
+            setProducts(prev => prev.filter(p => p._id !== id));
+        } else {
+            toast.error(res.message || "Failed to delete ad");
+        }
+    };
+
+    const handleEdit = (e, product) => {
+        e.stopPropagation();
+        setEditingProduct(product);
+    };
+
+    const handleUpdateSuccess = () => {
+        fetchProducts(); // Refresh list to get updated details
+        setEditingProduct(null);
+    };
 
     if (loading) {
         return (
@@ -58,7 +88,7 @@ export default function MyAdsPage() {
                             <div
                                 key={p._id}
                                 onClick={() => navigate(`/product/${p._id}`)}
-                                className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition cursor-pointer overflow-hidden group"
+                                className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition cursor-pointer overflow-hidden group relative"
                             >
                                 <div className="w-full h-40 overflow-hidden">
                                     <img
@@ -71,6 +101,24 @@ export default function MyAdsPage() {
                                     <h3 className="font-semibold text-gray-900 line-clamp-1">{p.title}</h3>
                                     <p className="text-sm text-gray-600 line-clamp-2 mt-1">{p.description}</p>
                                     <p className="text-lg font-bold text-primary mt-2">₹{p.price?.toLocaleString('en-IN')}</p>
+                                </div>
+
+                                {/* Action Buttons Overlay */}
+                                <div className="absolute top-2 right-2 flex gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={(e) => handleEdit(e, p)}
+                                        className="p-2 bg-white/90 backdrop-blur rounded-full shadow hover:bg-white text-gray-700 hover:text-primary transition-colors"
+                                        title="Edit Ad"
+                                    >
+                                        <Edit2 size={16} />
+                                    </button>
+                                    <button
+                                        onClick={(e) => handleDelete(e, p._id)}
+                                        className="p-2 bg-white/90 backdrop-blur rounded-full shadow hover:bg-white text-gray-700 hover:text-red-500 transition-colors"
+                                        title="Delete Ad"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
                                 </div>
                             </div>
                         ))}
@@ -93,6 +141,15 @@ export default function MyAdsPage() {
                     )}
                 </div>
             </div>
+
+            {/* Edit Modal */}
+            {editingProduct && (
+                <EditProductModal
+                    product={editingProduct}
+                    onClose={() => setEditingProduct(null)}
+                    onUpdate={handleUpdateSuccess}
+                />
+            )}
 
             <MobileBottomNav />
             <Footer />

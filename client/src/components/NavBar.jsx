@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useChat } from '../contexts/ChatContext';
 import { useSettings } from '../contexts/SettingsContext';
 
-import { getAllProducts } from '../services/product-api';
+import { getAllProducts, getListedProducts } from '../services/product-api';
 import { getPrimaryCategories } from '../services/category-api';
 
 export default function NavBar() {
@@ -23,6 +23,7 @@ export default function NavBar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [categories, setCategories] = useState([]);
+  const [isCheckingLimit, setIsCheckingLimit] = useState(false);
 
   useEffect(() => {
     fetchPrimaryCategories();
@@ -196,7 +197,29 @@ export default function NavBar() {
         <div className='items-center gap-5 hidden md:flex'>
           {isAuthenticated ? (
             <>
-              <button className='primarybutton' onClick={() => nextStep()}>Sell</button>
+              <button
+                className={`primarybutton ${isCheckingLimit ? 'opacity-70 cursor-wait' : ''}`}
+                disabled={isCheckingLimit}
+                onClick={async () => {
+                  if (isCheckingLimit) return;
+                  setIsCheckingLimit(true);
+                  try {
+                    const res = await getListedProducts();
+                    if (res.success && res.data.length >= 8) {
+                      alert("You have reached the maximum limit of 8 products.");
+                    } else {
+                      nextStep();
+                    }
+                  } catch (error) {
+                    console.error("Error checking limits", error);
+                    alert("Could not verify product limits. Please try again.");
+                  } finally {
+                    setIsCheckingLimit(false);
+                  }
+                }}
+              >
+                {isCheckingLimit ? 'Checking...' : 'Sell'}
+              </button>
 
 
               {/* Profile Dropdown */}

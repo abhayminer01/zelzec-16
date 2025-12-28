@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import NavBar from '../components/NavBar'
 import Footer from '../components/Footer'
 import MobileBottomNav from '../components/MobileBottomNav'
-import { getProductForProfile } from '../services/product-api';
+import { getListedProducts } from '../services/product-api';
 import { getUser } from '../services/auth';
 import { useNavigate } from 'react-router-dom';
 import { toast, Toaster } from 'sonner';
@@ -18,7 +18,7 @@ export default function ProfilePage() {
         const fetchData = async () => {
             try {
                 const [productsRes, userData] = await Promise.all([
-                    getProductForProfile(),
+                    getListedProducts(),
                     getUser()
                 ]);
                 setProducts(productsRes.data);

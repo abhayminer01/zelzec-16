@@ -18,17 +18,28 @@ export default function UploadImage({ onNext }) {
 
   const handleFileChange = async (e) => {
     setLoading(true);
+    setError("");
     const files = Array.from(e.target.files);
-    const totalImages = images.length + files.length;
 
-    if (totalImages > 5) {
-      setError("You can upload up to 5 images only.");
+    // Calculate how many more images can be added
+    const remainingSlots = 6 - images.length;
+
+    if (remainingSlots <= 0) {
+      setError("You have reached the limit of 6 images.");
+      setLoading(false);
       return;
+    }
+
+    let filesToProcess = files;
+    if (files.length > remainingSlots) {
+      filesToProcess = files.slice(0, remainingSlots);
+      setError(`Only ${remainingSlots} image(s) could be added. Limit is 6.`);
+      // Don't return, proceed with processing the allowed files
     }
 
     try {
       const compressedPreviews = await Promise.all(
-        files.map(async (file) => {
+        filesToProcess.map(async (file) => {
           const options = {
             maxSizeMB: 0.3, // target ~300KB per image
             maxWidthOrHeight: 1080, // resize if larger
@@ -46,10 +57,10 @@ export default function UploadImage({ onNext }) {
       const updated = [...images, ...compressedPreviews];
       setImages(updated);
       handleImageChange(updated);
-      setError("");
     } catch (err) {
       console.error("Error compressing images:", err);
       setError("Error compressing images. Please try again.");
+      setLoading(false);
     }
   };
 
@@ -92,11 +103,10 @@ export default function UploadImage({ onNext }) {
         <div className="flex justify-center">
           <div
             onClick={() => fileInputRef.current.click()}
-            className={`border-2 rounded-3xl w-full md:w-60 aspect-square md:h-60 flex items-center justify-center cursor-pointer transition ${
-              images.length >= 5
-                ? "border-gray-300 cursor-not-allowed opacity-60"
-                : "border-primary/40 hover:border-primary"
-            }`}
+            className={`border-2 rounded-3xl w-full md:w-60 aspect-square md:h-60 flex items-center justify-center cursor-pointer transition ${images.length >= 6
+              ? "border-gray-300 cursor-not-allowed opacity-60"
+              : "border-primary/40 hover:border-primary"
+              }`}
           >
             <div className="bg-primary/20 rounded-2xl p-6 md:p-4">
               <Plus className="text-white size-12 md:size-16" strokeWidth={3} />
@@ -107,7 +117,7 @@ export default function UploadImage({ onNext }) {
               multiple
               accept="image/*"
               onChange={handleFileChange}
-              disabled={images.length >= 5}
+              disabled={images.length >= 6}
               className="hidden"
             />
           </div>

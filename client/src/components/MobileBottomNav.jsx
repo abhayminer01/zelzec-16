@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext'; // Added
 import { useSettings } from '../contexts/SettingsContext'; // Added
 import { useModal } from '../contexts/ModalContext'; // Added
 import { logoutUser } from '../services/auth'; // Added
+import { getListedProducts } from '../services/product-api'; // Added
 
 export default function MobileBottomNav() {
   const { nextStep } = useSell();
@@ -22,6 +23,8 @@ export default function MobileBottomNav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const toggleRef = useRef(null);
+
+  const [isCheckingLimit, setIsCheckingLimit] = useState(false);
 
   // Close menu on outside click
   useEffect(() => {
@@ -193,19 +196,45 @@ export default function MobileBottomNav() {
 
         {/* Sell / Post Ad */}
         <button
-          onClick={() => {
+          onClick={async () => {
+            // If already checking, do nothing (prevent double clicks)
+            if (isCheckingLimit) return;
+
             closeSidebar();
             setIsMenuOpen(false);
             if (!isAuthenticated) {
               openLogin();
               return;
             }
-            setTimeout(() => nextStep(), 100);
+
+            // Check Limit
+            setIsCheckingLimit(true);
+            try {
+              const res = await getListedProducts();
+              if (res.success && res.data.length >= 8) {
+                alert("You have reached the maximum limit of 8 products.");
+              } else {
+                setTimeout(() => nextStep(), 100);
+              }
+            } catch (error) {
+              console.error("Error checking limits", error);
+              // Fallback to allow listing if check fails? Or block? 
+              // Sticking to safer side (allow) or alerting error.
+              // Let's alert error for now.
+              alert("Could not verify product limits. Please try again.");
+            } finally {
+              setIsCheckingLimit(false);
+            }
           }}
           className='flex flex-col items-center justify-center flex-1'
+          disabled={isCheckingLimit}
         >
-          <div className='bg-black rounded-lg p-2 shadow-lg shadow-black/20'>
-            <Plus className='text-white size-6' />
+          <div className={`bg-black rounded-lg p-2 shadow-lg shadow-black/20 ${isCheckingLimit ? 'opacity-70' : ''}`}>
+            {isCheckingLimit ? (
+              <div className="size-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            ) : (
+              <Plus className='text-white size-6' />
+            )}
           </div>
         </button>
 

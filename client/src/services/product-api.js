@@ -47,7 +47,7 @@ export const getProduct = async (id) => {
   }
 }
 
-export const getProductForProfile = async () => {
+export const getListedProducts = async () => {
   try {
     const req = await api.get('/profile');
     return req.data;
@@ -73,5 +73,26 @@ export const getRelatedProducts = async (id) => {
     return req.data;
   } catch (error) {
     return { success: false, message: error.message };
+  }
+}
+
+export const deleteProduct = async (id) => {
+  try {
+    const req = await api.delete(`/${id}`);
+    return req.data;
+  } catch (error) {
+    return { success: false, message: error.response?.data?.message || error.message };
+  }
+}
+
+export const updateProduct = async (id, data) => {
+  try {
+    const isFormData = data instanceof FormData;
+    const config = isFormData ? { headers: { "Content-Type": "multipart/form-data" } } : {};
+
+    const req = await api.put(`/${id}`, data, config);
+    return req.data;
+  } catch (error) {
+    return { success: false, message: error.response?.data?.message || error.message };
   }
 }

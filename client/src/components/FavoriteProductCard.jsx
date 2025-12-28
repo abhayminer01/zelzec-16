@@ -77,9 +77,9 @@ const FavoriteProductCard = ({ product, navigate, onFavoriteChange }) => {
             </div>
 
             {/* Content Body */}
-            <div className="p-4 flex flex-col flex-1">
+            <div className="p-3 sm:p-4 flex flex-col flex-1">
                 <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-[#8069AE] transition-colors">{formatPrice(product.price)}</h3>
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-[#8069AE] transition-colors">{formatPrice(product.price)}</h3>
                 </div>
 
                 <h4 className="text-sm font-medium text-gray-700 line-clamp-2 mb-3 min-h-[2.5em]">

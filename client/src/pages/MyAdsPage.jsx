@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast, Toaster } from 'sonner';
 import { Trash2, Edit2 } from 'lucide-react';
 import EditProductModal from '../components/EditProductModal';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 export default function MyAdsPage() {
     const [products, setProducts] = useState([]);
@@ -34,18 +35,27 @@ export default function MyAdsPage() {
         fetchProducts();
     }, []);
 
-    const handleDelete = async (e, id) => {
-        e.stopPropagation(); // Prevent navigation
-        const confirm = window.confirm("Are you sure you want to delete this ad? This action cannot be undone.");
-        if (!confirm) return;
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [productToDelete, setProductToDelete] = useState(null);
+
+    const handleDeleteClick = (e, id) => {
+        e.stopPropagation();
+        setProductToDelete(id);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!productToDelete) return;
 
         const loader = toast.loading("Deleting ad...");
-        const res = await deleteProduct(id);
+        const res = await deleteProduct(productToDelete);
         toast.dismiss(loader);
 
         if (res.success) {
             toast.success("Ad deleted successfully");
-            setProducts(prev => prev.filter(p => p._id !== id));
+            setProducts(prev => prev.filter(p => p._id !== productToDelete));
+            setShowDeleteModal(false);
+            setProductToDelete(null);
         } else {
             toast.error(res.message || "Failed to delete ad");
         }
@@ -60,6 +70,8 @@ export default function MyAdsPage() {
         fetchProducts(); // Refresh list to get updated details
         setEditingProduct(null);
     };
+
+
 
     if (loading) {
         return (
@@ -83,41 +95,46 @@ export default function MyAdsPage() {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <h1 className="text-2xl font-bold text-gray-900 mb-6">My Ads ({products.length})</h1>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {products.map((p) => (
                             <div
                                 key={p._id}
                                 onClick={() => navigate(`/product/${p._id}`)}
-                                className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition cursor-pointer overflow-hidden group relative"
+                                className="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden group flex flex-col h-full"
                             >
-                                <div className="w-full h-40 overflow-hidden">
+                                <div className="w-full h-48 overflow-hidden relative bg-gray-100">
                                     <img
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         src={`${import.meta.env.VITE_BACKEND_URL}${p.images?.[0]?.url}`}
                                         alt={p.title}
                                     />
+                                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-bold text-[#8069AE] shadow-sm">
+                                        ₹{p.price?.toLocaleString('en-IN')}
+                                    </div>
                                 </div>
-                                <div className="p-3">
-                                    <h3 className="font-semibold text-gray-900 line-clamp-1">{p.title}</h3>
-                                    <p className="text-sm text-gray-600 line-clamp-2 mt-1">{p.description}</p>
-                                    <p className="text-lg font-bold text-primary mt-2">₹{p.price?.toLocaleString('en-IN')}</p>
+                                <div className="p-4 flex-1">
+                                    <h3 className="font-bold text-gray-900 line-clamp-1 text-lg mb-1">{p.title}</h3>
+                                    <p className="text-sm text-gray-500 line-clamp-2 h-10 leading-relaxed">{p.description}</p>
+                                    <div className="mt-3 flex items-center gap-2 text-xs text-gray-400 font-medium">
+                                        <span>Posted {new Date(p.createdAt).toLocaleDateString()}</span>
+                                    </div>
                                 </div>
 
-                                {/* Action Buttons Overlay */}
-                                <div className="absolute top-2 right-2 flex gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                {/* Visible Action Footer */}
+                                <div className="px-4 py-3 bg-gray-50/50 border-t border-gray-100 flex gap-3">
                                     <button
                                         onClick={(e) => handleEdit(e, p)}
-                                        className="p-2 bg-white/90 backdrop-blur rounded-full shadow hover:bg-white text-gray-700 hover:text-primary transition-colors"
-                                        title="Edit Ad"
+                                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:border-[#8069AE] hover:text-[#8069AE] transition-all shadow-sm active:scale-95"
                                     >
                                         <Edit2 size={16} />
+                                        Edit
                                     </button>
                                     <button
-                                        onClick={(e) => handleDelete(e, p._id)}
-                                        className="p-2 bg-white/90 backdrop-blur rounded-full shadow hover:bg-white text-gray-700 hover:text-red-500 transition-colors"
-                                        title="Delete Ad"
+                                        onClick={(e) => handleDeleteClick(e, p._id)}
+                                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-red-600 hover:border-red-200 hover:bg-red-50 transition-all shadow-sm active:scale-95"
                                     >
                                         <Trash2 size={16} />
+                                        Delete
                                     </button>
                                 </div>
                             </div>
@@ -133,7 +150,7 @@ export default function MyAdsPage() {
                             <p className="mb-6">Start selling your items today!</p>
                             <button
                                 onClick={() => navigate('/sell')} // Assuming /sell or using context to open sell modal
-                                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                                className="px-6 py-2 bg-[#8069AE] text-white rounded-lg hover:bg-[#6b5894] transition-colors shadow-lg shadow-purple-200"
                             >
                                 Post an Ad
                             </button>
@@ -150,6 +167,17 @@ export default function MyAdsPage() {
                     onUpdate={handleUpdateSuccess}
                 />
             )}
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={confirmDelete}
+                title="Delete Advertisement"
+                description="Are you sure you want to delete this ad? This action cannot be undone and will remove it from the marketplace."
+                confirmText="Delete Ad"
+                confirmType="danger"
+            />
 
             <MobileBottomNav />
             <Footer />

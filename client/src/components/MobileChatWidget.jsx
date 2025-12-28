@@ -1,15 +1,12 @@
 // src/components/MobileChatWidget.jsx
 import React, { useRef, useEffect } from 'react';
 import { useChat } from '../contexts/ChatContext';
-import { getHistory, sendMessage, markAsRead } from '../services/chat-api';
+import { getHistory, sendMessage } from '../services/chat-api';
 import { toast } from 'sonner';
-import { ArrowLeft, Check, CheckCheck } from 'lucide-react';
-
-import { useSocket } from '../contexts/SocketContext'; // Add import
+import { ArrowLeft } from 'lucide-react';
 
 const MobileChatWidget = () => {
   const { chatState, updateMessages, updateText, closeChat, appendMessage } = useChat();
-  const socket = useSocket(); // Get socket
   const { activeChats, chatSessions, currentUserId, chats } = chatState;
 
   // For mobile, we focus the last active chat (most recently opened)
@@ -35,14 +32,19 @@ const MobileChatWidget = () => {
   useEffect(() => {
     if (!activeChatId) return;
 
-    // Ensure we are in the socket room
-    if (socket) socket.emit("join_chat", activeChatId);
-
     const loadMessages = async () => {
-      // ...
+      try {
+        const data = await getHistory(activeChatId);
+        updateMessages(activeChatId, Array.isArray(data.messages) ? data.messages : []);
+      } catch (err) {
+        console.error("Failed to load messages", err);
+        toast.error("Failed to load chat history");
+        updateMessages(activeChatId, []);
+      }
     };
+
     loadMessages();
-  }, [activeChatId, socket]); // Add dependencies
+  }, [activeChatId]);
 
   useEffect(() => {
     scrollToBottom();
@@ -137,16 +139,9 @@ const MobileChatWidget = () => {
                 >
                   {msg.text}
                 </div>
-                <div className={`text-[10px] text-gray-400 mt-1 px-1 flex items-center gap-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                  <span>{time}</span>
-                  {isOwn && (
-                    msg.read ? (
-                      <CheckCheck className="w-3 h-3 text-blue-500" />
-                    ) : (
-                      <Check className="w-3 h-3 text-gray-400" />
-                    )
-                  )}
-                </div>
+                <span className={`text-[10px] text-gray-400 mt-1 px-1 ${isOwn ? 'text-right' : 'text-left'}`}>
+                  {time}
+                </span>
               </div>
             );
           })

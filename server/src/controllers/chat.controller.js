@@ -203,25 +203,16 @@ const markAsRead = async (req, res) => {
         const { chatId } = req.body;
         const userId = req.user._id;
 
-        // 1. Reset unread count for the user in the Chat model
         const update = {};
         update[`unreadCount.${userId}`] = 0;
+
         await Chat.findByIdAndUpdate(chatId, { $set: update });
 
-        // 2. Mark all messages from the OTHER user as read
-        // Sender is NOT me, and chatId matches
-        await Message.updateMany(
-            { chatId: chatId, sender: { $ne: userId }, read: false },
-            { $set: { read: true } }
-        );
-
-        // 3. Emit Realtime Event to the room
-        const io = getIO();
-        io.to(chatId).emit("messages_read", { chatId, readerId: userId });
+        // Also update Message documents? (Optional, expensive if many)
+        // For now, we trust unreadCount on Chat model for UI.
 
         res.status(200).json({ success: true });
     } catch (error) {
-        console.error("Mark as read error:", error);
         res.status(500).json({ success: false, err: error.message });
     }
 }

@@ -6,7 +6,6 @@ router.post('/start', userAuthMiddleware, chatController.startChat);
 router.post('/send', userAuthMiddleware, chatController.sendMessage);
 router.get('/history/:chatId', userAuthMiddleware, chatController.getChatHistory)
 router.get('/my-chats', userAuthMiddleware, chatController.getMyChats);
-router.post('/read', userAuthMiddleware, chatController.markAsRead);
 // router.get('/:chatId', userAuthMiddleware, chatController.getChat);
 
 module.exports = router;

@@ -37,14 +37,6 @@ export const ChatProvider = ({ children }) => {
 
             // 1. Update session messages if chat is open
             if (isChatOpen) {
-                // If chat is open and message is from other user, mark it as read immediately
-                const myId = currentUserIdRef.current;
-                if (message.sender?._id !== myId && message.sender !== myId) {
-                    markAsRead(message.chatId).catch(console.error);
-                    // Update the message itself to be read (optimistic for local view, though usually we care about own messages)
-                    message.read = true;
-                }
-
                 setChatState(prev => {
                     const session = prev.chatSessions[message.chatId] || { messages: [], text: '', isTyping: false };
 
@@ -126,33 +118,10 @@ export const ChatProvider = ({ children }) => {
             }
         });
 
-        socket.on("messages_read", ({ chatId, readerId }) => {
-            setChatState(prev => {
-                // If I am the reader, I don't need to update my UI to show *I* read them (unless distinct styling)
-                // But generally, this event is useful to show *Sender* that *Reader* read them.
-
-                // We just mark all messages in this chat session as read = true
-                const session = prev.chatSessions[chatId];
-                if (!session) return prev; // If not loaded, nothing to update
-
-                return {
-                    ...prev,
-                    chatSessions: {
-                        ...prev.chatSessions,
-                        [chatId]: {
-                            ...session,
-                            messages: session.messages.map(m => ({ ...m, read: true }))
-                        }
-                    }
-                };
-            });
-        });
-
         return () => {
             socket.off("receive_message");
             socket.off("typing");
             socket.off("stop_typing");
-            socket.off("messages_read");
         };
     }, [socket]);
 

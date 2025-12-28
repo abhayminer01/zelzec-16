@@ -1,14 +1,12 @@
+// src/components/ChatWidget.jsx
 import React, { useRef, useEffect } from 'react';
 import { useChat } from '../contexts/ChatContext';
-import { useSocket } from '../contexts/SocketContext';
 import { getHistory, sendMessage } from '../services/chat-api';
 import { toast } from 'sonner';
-import { Check, CheckCheck } from 'lucide-react';
 
 const ChatWidget = ({ chatId, style, index }) => {
     const { chatState, updateMessages, updateText, closeChat, toggleMinimize, appendMessage } = useChat();
     const { chats, currentUserId, chatSessions, activeChats } = chatState;
-    const socket = useSocket();
 
     // Get session data for THIS chat
     const session = chatSessions[chatId] || { messages: [], text: '', isTyping: false };
@@ -41,22 +39,22 @@ const ChatWidget = ({ chatId, style, index }) => {
     useEffect(() => {
         if (!chatId) return;
 
-        // Ensure we are in the socket room
-        if (socket) socket.emit("join_chat", chatId);
-
         const loadMessages = async () => {
+            // Only fetch if empty to avoid flicker? Or always refresh?
+            // If we have messages, assume they are up to date from socket or previous fetch?
+            // For now, simple fetch as before.
             try {
                 const data = await getHistory(chatId);
                 updateMessages(chatId, Array.isArray(data.messages) ? data.messages : []);
             } catch (err) {
                 console.error("Failed to load messages", err);
                 toast.error("Failed to load chat history");
-                updateMessages(chatId, []);
+                updateMessages(chatId, []); // ensure array
             }
         };
 
         loadMessages();
-    }, [chatId, socket]);
+    }, [chatId]); // Only when chatId changes (mount)
 
     // Scroll effects
     useEffect(() => {
@@ -175,21 +173,12 @@ const ChatWidget = ({ chatId, style, index }) => {
                                 return (
                                     <div
                                         key={msg._id || msg.createdAt}
-                                        className={`mb-2 max-w-[85%] p-2.5 rounded-xl text-sm break-words flex flex-col ${isOwn
-                                            ? 'ml-auto bg-[#8069AE] text-white rounded-br-none items-end'
-                                            : 'mr-auto bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-none items-start'
+                                        className={`mb-2 max-w-[85%] p-2.5 rounded-xl text-sm break-words ${isOwn
+                                            ? 'ml-auto bg-[#8069AE] text-white rounded-br-none'
+                                            : 'mr-auto bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-none'
                                             }`}
                                     >
-                                        <span>{msg.text}</span>
-                                        {isOwn && (
-                                            <span className="ml-1 -mb-1 mt-0.5 self-end">
-                                                {msg.read ? (
-                                                    <CheckCheck className="w-3.5 h-3.5 text-blue-200" />
-                                                ) : (
-                                                    <Check className="w-3.5 h-3.5 text-gray-300" />
-                                                )}
-                                            </span>
-                                        )}
+                                        {msg.text}
                                     </div>
                                 );
                             })

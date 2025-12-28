@@ -98,3 +98,39 @@ export const deleteUser = async () => {
         return error?.response?.data || { success: false, message: "Network error" };
     }
 }
+
+export const sendOtp = async (email) => {
+    try {
+        const req = await api.post('/api/v1/auth/send-otp', { email }, {
+            withCredentials: true
+        });
+        return req.data;
+    } catch (error) {
+        console.log(error);
+        return error?.response?.data || { success: false, message: "Network error" };
+    }
+}
+
+export const verifyOtp = async (email, otp) => {
+    try {
+        const req = await api.post('/api/v1/auth/verify-otp', { email, otp }, {
+            withCredentials: true
+        });
+        return req.data;
+    } catch (error) {
+        console.log(error);
+        return error?.response?.data || { success: false, message: "Network error" };
+    }
+}
+
+export const resetPassword = async (email, otp, newPassword) => {
+    try {
+        const req = await api.post('/api/v1/auth/reset-password', { email, otp, newPassword }, {
+            withCredentials: true
+        });
+        return req.data;
+    } catch (error) {
+        console.log(error);
+        return error?.response?.data || { success: false, message: "Network error" };
+    }
+}

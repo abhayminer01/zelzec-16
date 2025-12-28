@@ -11,6 +11,8 @@ import { useSettings } from '../contexts/SettingsContext';
 
 import { getAllProducts, getListedProducts } from '../services/product-api';
 import { getPrimaryCategories } from '../services/category-api';
+import Swal from "sweetalert2";
+import { toast } from "sonner";
 
 export default function NavBar() {
   const navigate = useNavigate();
@@ -206,13 +208,18 @@ export default function NavBar() {
                   try {
                     const res = await getListedProducts();
                     if (res.success && res.data.length >= 8) {
-                      alert("You have reached the maximum limit of 8 products.");
+                      Swal.fire({
+                        icon: 'warning',
+                        title: 'Limit Reached',
+                        text: "You have reached the maximum limit of 8 products.",
+                        confirmButtonColor: '#7C5CB9'
+                      });
                     } else {
                       nextStep();
                     }
                   } catch (error) {
                     console.error("Error checking limits", error);
-                    alert("Could not verify product limits. Please try again.");
+                    toast.error("Could not verify product limits. Please try again.");
                   } finally {
                     setIsCheckingLimit(false);
                   }

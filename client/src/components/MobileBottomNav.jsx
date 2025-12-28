@@ -8,6 +8,8 @@ import { useSettings } from '../contexts/SettingsContext'; // Added
 import { useModal } from '../contexts/ModalContext'; // Added
 import { logoutUser } from '../services/auth'; // Added
 import { getListedProducts } from '../services/product-api'; // Added
+import Swal from "sweetalert2";
+import { toast } from "sonner";
 
 export default function MobileBottomNav() {
   const { nextStep } = useSell();
@@ -212,7 +214,12 @@ export default function MobileBottomNav() {
             try {
               const res = await getListedProducts();
               if (res.success && res.data.length >= 8) {
-                alert("You have reached the maximum limit of 8 products.");
+                Swal.fire({
+                  icon: 'warning',
+                  title: 'Limit Reached',
+                  text: "You have reached the maximum limit of 8 products.",
+                  confirmButtonColor: '#7C5CB9'
+                });
               } else {
                 setTimeout(() => nextStep(), 100);
               }
@@ -221,7 +228,7 @@ export default function MobileBottomNav() {
               // Fallback to allow listing if check fails? Or block? 
               // Sticking to safer side (allow) or alerting error.
               // Let's alert error for now.
-              alert("Could not verify product limits. Please try again.");
+              toast.error("Could not verify product limits. Please try again.");
             } finally {
               setIsCheckingLimit(false);
             }

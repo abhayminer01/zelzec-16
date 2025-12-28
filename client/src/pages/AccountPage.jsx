@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import NavBar from '../components/NavBar';
 import MobileBottomNav from '../components/MobileBottomNav';
 import Footer from '../components/Footer';
-import { getUser, updateUser, deleteUser, logoutUser } from '../services/auth';
+import { getUser, updateUser, deleteUser, logoutUser, sendOtp, verifyOtp, resetPassword } from '../services/auth';
 import { toast, Toaster } from 'sonner';
 import { User, Mail, Phone, MapPin, Save, Edit2, X, Shield, Camera, Bell } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -22,6 +22,13 @@ export default function AccountPage() {
     });
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('personal'); // personal, security, notifications
+
+    // Password Update State
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [passwordStep, setPasswordStep] = useState(1); // 1: Send OTP, 2: Verify OTP, 3: New Password
+    const [otp, setOtp] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [passwordLoading, setPasswordLoading] = useState(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -118,6 +125,70 @@ export default function AccountPage() {
             </div>
         );
     }
+
+
+    // Password Update Handlers
+    const handleSendOtp = async () => {
+        setPasswordLoading(true);
+        try {
+            const res = await sendOtp(user.email);
+            if (res.success) {
+                toast.success('OTP sent to your email');
+                setPasswordStep(2);
+            } else {
+                toast.error(res.message || 'Failed to send OTP');
+            }
+        } catch (error) {
+            toast.error('Error sending OTP');
+        } finally {
+            setPasswordLoading(false);
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        setPasswordLoading(true);
+        try {
+            const res = await verifyOtp(user.email, otp);
+            if (res.success) {
+                toast.success('OTP verified');
+                setPasswordStep(3);
+            } else {
+                toast.error(res.message || 'Invalid OTP');
+            }
+        } catch (error) {
+            toast.error('Error verifying OTP');
+        } finally {
+            setPasswordLoading(false);
+        }
+    };
+
+    const handleResetPassword = async () => {
+        if (!newPassword) {
+            toast.error('Please enter a new password');
+            return;
+        }
+        setPasswordLoading(true);
+        try {
+            const res = await resetPassword(user.email, otp, newPassword);
+            if (res.success) {
+                toast.success('Password updated successfully');
+                setShowPasswordModal(false);
+                resetPasswordState();
+            } else {
+                toast.error(res.message || 'Failed to update password');
+            }
+        } catch (error) {
+            toast.error('Error updating password');
+        } finally {
+            setPasswordLoading(false);
+        }
+    };
+
+    const resetPasswordState = () => {
+        setPasswordStep(1);
+        setOtp('');
+        setNewPassword('');
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
@@ -311,7 +382,10 @@ export default function AccountPage() {
                                                 </div>
                                                 <h3 className="text-lg font-medium text-gray-900">Security Settings</h3>
                                                 <p className="text-gray-500 mt-1">Manage your account security.</p>
-                                                <button className="mt-6 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                                <button
+                                                    onClick={() => setShowPasswordModal(true)}
+                                                    className="mt-6 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                                                >
                                                     Update Password
                                                 </button>
                                             </div>
@@ -361,6 +435,86 @@ export default function AccountPage() {
                     </div>
                 </div>
             </main>
+
+            {/* Password Update Modal */}
+            {showPasswordModal && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl w-full max-w-md p-6 relative">
+                        <button
+                            onClick={() => { setShowPasswordModal(false); resetPasswordState(); }}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <h3 className="text-xl font-bold text-gray-900 mb-6">Update Password</h3>
+
+                        {passwordStep === 1 && (
+                            <div className="space-y-4">
+                                <p className="text-gray-600">
+                                    Click the button below to receive a One-Time Password (OTP) on your registered email: <strong>{user?.email}</strong>
+                                </p>
+                                <button
+                                    onClick={handleSendOtp}
+                                    disabled={passwordLoading}
+                                    className="w-full bg-[#8069AE] text-white py-3 rounded-xl font-medium hover:bg-[#6A5299] transition-colors disabled:opacity-70"
+                                >
+                                    {passwordLoading ? 'Sending...' : 'Send OTP'}
+                                </button>
+                            </div>
+                        )}
+
+                        {passwordStep === 2 && (
+                            <div className="space-y-4">
+                                <p className="text-gray-600">
+                                    Enter the OTP sent to <strong>{user?.email}</strong>
+                                </p>
+                                <input
+                                    type="text"
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value)}
+                                    placeholder="Enter 6-digit OTP"
+                                    className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-[#8069AE] focus:border-transparent outline-none text-center text-lg tracking-widest"
+                                    maxLength={6}
+                                />
+                                <button
+                                    onClick={handleVerifyOtp}
+                                    disabled={passwordLoading || otp.length !== 6}
+                                    className="w-full bg-[#8069AE] text-white py-3 rounded-xl font-medium hover:bg-[#6A5299] transition-colors disabled:opacity-70"
+                                >
+                                    {passwordLoading ? 'Verifying...' : 'Verify OTP'}
+                                </button>
+                                <button
+                                    onClick={() => setPasswordStep(1)}
+                                    className="w-full text-sm text-gray-500 hover:text-gray-700"
+                                >
+                                    Resend OTP
+                                </button>
+                            </div>
+                        )}
+
+                        {passwordStep === 3 && (
+                            <div className="space-y-4">
+                                <p className="text-gray-600">Enter your new password.</p>
+                                <input
+                                    type="password"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    placeholder="New Password"
+                                    className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-[#8069AE] focus:border-transparent outline-none"
+                                />
+                                <button
+                                    onClick={handleResetPassword}
+                                    disabled={passwordLoading || !newPassword}
+                                    className="w-full bg-[#8069AE] text-white py-3 rounded-xl font-medium hover:bg-[#6A5299] transition-colors disabled:opacity-70"
+                                >
+                                    {passwordLoading ? 'Updating...' : 'Update Password'}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             <Footer />
             <MobileBottomNav />

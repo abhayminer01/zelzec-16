@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useSell } from "../../contexts/SellContext";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -77,6 +78,8 @@ function ClickableMap({ setMarkerPos, setAddress }) {
   return null;
 }
 
+
+
 export default function SelectLocation() {
   const [address, setAddress] = useState("");
   const [markerPos, setMarkerPos] = useState(null);
@@ -106,17 +109,18 @@ export default function SelectLocation() {
         console.log("📍 Found:", placeName);
         handleLocation({ lat: parseFloat(lat), lng: parseFloat(lon), place: placeName });
       } else {
-        alert("Location not found");
+        toast.error("Location not found");
       }
       setLoading(false);
     } catch (err) {
       console.error("Error searching location:", err);
+      toast.error("Error searching location");
     }
   };
 
   const handleNext = () => {
     if (!markerPos) {
-      alert("Please select a location before continuing.");
+      toast.warning("Please select a location before continuing.");
       return;
     }
     nextStep();
@@ -166,11 +170,10 @@ export default function SelectLocation() {
         <div className="px-6 md:px-0 pb-24 md:pb-0">
           <button
             onClick={handleNext}
-            className={`w-full py-3 rounded-xl mt-6 md:mt-10 font-medium text-white ${
-              markerPos
-                ? "bg-primary hover:bg-primary/90"
-                : "bg-gray-300 cursor-not-allowed"
-            }`}
+            className={`w-full py-3 rounded-xl mt-6 md:mt-10 font-medium text-white ${markerPos
+              ? "bg-primary hover:bg-primary/90"
+              : "bg-gray-300 cursor-not-allowed"
+              }`}
             disabled={!markerPos}
             type="button"
           >

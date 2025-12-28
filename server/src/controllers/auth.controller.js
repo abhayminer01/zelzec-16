@@ -1,4 +1,5 @@
 const User = require("../models/user.model");
+const Product = require("../models/product.model");
 const bcrypt = require('bcrypt');
 
 const checkAuth = async (req, res) => {
@@ -120,11 +121,141 @@ const logoutUser = (req, res) => {
     }
 }
 
+const nodemailer = require('nodemailer');
+
+// Configure Nodemailer
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
+
+const sendOtp = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        // Generate 6 digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Expiry 10 minutes from now
+        const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+        user.otp = otp;
+        user.otpExpires = otpExpires;
+        await user.save();
+
+        const mailOptions = {
+            from: 'Zelzec <abhayvijayan78@gmail.com>',
+            to: email,
+            subject: 'Password Reset OTP',
+            text: `Your OTP for password reset is: ${otp}. It is valid for 10 minutes.`
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.log(error);
+                return res.status(500).json({ success: false, message: "Failed to send OTP", error: error.message });
+            }
+            res.status(200).json({ success: true, message: "OTP sent successfully" });
+        });
+
+    } catch (error) {
+        res.status(500).json({ success: false, err: error.message });
+    }
+};
+
+const verifyOtp = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        if (user.otp !== otp) {
+            return res.status(400).json({ success: false, message: "Invalid OTP" });
+        }
+
+        if (user.otpExpires < Date.now()) {
+            return res.status(400).json({ success: false, message: "OTP has expired" });
+        }
+
+        res.status(200).json({ success: true, message: "OTP Verified" });
+
+    } catch (error) {
+        res.status(500).json({ success: false, err: error.message });
+    }
+};
+
+const resetPassword = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        // Verify OTP again just in case (stateless verify prefered usually but this works for now)
+        if (user.otp !== otp || user.otpExpires < Date.now()) {
+            return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+
+        // Clear OTP fields
+        user.otp = undefined;
+        user.otpExpires = undefined;
+
+        await user.save();
+
+        res.status(200).json({ success: true, message: "Password updated successfully" });
+
+    } catch (error) {
+        res.status(500).json({ success: false, err: error.message });
+    }
+};
+
+
+const deleteUser = async (req, res) => {
+    try {
+        // 1. Delete all products of the user
+        await Product.deleteMany({ user: req.user._id });
+
+        // 2. Delete the user
+        await User.findByIdAndDelete(req.user._id);
+
+        // 3. Clear session
+        req.session.destroy((err) => {
+            if (err) {
+                return res.status(500).json({ success: false, message: "Account deleted but failed to log out" });
+            }
+            res.clearCookie('connect.sid');
+            res.status(200).json({ success: true, message: "Account and associated data deleted successfully" });
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, err: error.message });
+    }
+};
+
 module.exports = {
     checkAuth,
     registerUser,
     loginUser,
     getUser,
     updateUser,
-    logoutUser
+    logoutUser,
+    sendOtp,
+    verifyOtp,
+    resetPassword,
+    deleteUser
 }

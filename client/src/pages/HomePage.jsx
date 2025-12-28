@@ -21,6 +21,7 @@ import Footer from '../components/Footer'
 import { useAuth } from '../contexts/AuthContext'
 import { visitorCount } from '../services/auth'
 import { useNavigate } from 'react-router-dom';
+import Swal from "sweetalert2";
 
 export default function HomePage() {
   const [category, setCategory] = useState([]);
@@ -94,6 +95,8 @@ export default function HomePage() {
     }
   }
 
+  // ... existing code ...
+
   const handlePostAdButton = async () => {
     if (!isAuthenticated) {
       openLogin();
@@ -102,13 +105,18 @@ export default function HomePage() {
         try {
           const res = await getListedProducts();
           if (res.success && res.data.length >= 8) {
-            alert("You have reached the maximum limit of 8 products.");
+            Swal.fire({
+              icon: 'warning',
+              title: 'Limit Reached',
+              text: "You have reached the maximum limit of 8 products.",
+              confirmButtonColor: '#7C5CB9'
+            });
           } else {
             nextStep();
           }
         } catch (error) {
           console.error(error);
-          alert("Could not verify limits. Please try again.");
+          toast.error("Could not verify limits. Please try again.");
         }
       } else {
         clearStep();

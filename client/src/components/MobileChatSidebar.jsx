@@ -44,7 +44,7 @@ const MobileChatSidebar = () => {
       </div>
 
       {/* Chat List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-24"> {/* pb-24 for bottom nav space */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-3 pb-24"> {/* pb-24 for bottom nav space */}
         {filteredChats.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-[#A89BC8]">
             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-3 shadow-sm">

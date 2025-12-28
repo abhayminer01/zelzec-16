@@ -13,6 +13,10 @@
   font-variation-settings: "wdth" 100;
 }
 
+body {
+  overflow-x: hidden;
+}
+
 .primarybutton {
   background: #8069AE;
   border: 1px solid #8069AE;

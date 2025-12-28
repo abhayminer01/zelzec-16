@@ -103,7 +103,7 @@ const ChatSidebar = () => {
                         </div>
                     </div>
 
-                    <div className="h-[300px] overflow-y-auto p-3 space-y-2">
+                    <div className="h-[300px] overflow-y-auto overflow-x-hidden p-3 space-y-2">
                         {filteredChats.length === 0 ? (
                             <p className="text-center text-[#A89BC8] text-sm py-4">No chats found</p>
                         ) : (
@@ -191,7 +191,7 @@ const ChatSidebar = () => {
                     </div>
 
                     {/* Chat List */}
-                    <div className="h-[calc(100vh-140px)] overflow-y-auto p-4 space-y-3">
+                    <div className="h-[calc(100vh-140px)] overflow-y-auto overflow-x-hidden p-4 space-y-3">
                         {filteredChats.length === 0 ? (
                             <p className="text-center text-[#A89BC8] text-sm py-4 mt-10">No chats found</p>
                         ) : (

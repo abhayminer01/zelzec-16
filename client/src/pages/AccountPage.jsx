@@ -222,28 +222,21 @@ export default function AccountPage() {
                             </div>
 
                             {/* Navigation Menu */}
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hidden md:block">
-                                <nav className="flex flex-col">
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                                <nav className="flex flex-row md:flex-col overflow-x-auto md:overflow-visible no-scrollbar">
                                     <button
                                         onClick={() => setActiveTab('personal')}
-                                        className={`flex items-center gap-3 px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'personal' ? 'bg-[#8069AE]/10 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent'}`}
+                                        className={`flex-shrink-0 flex items-center gap-3 px-6 py-4 text-sm font-medium transition-colors border-b-4 md:border-b-0 md:border-l-4 whitespace-nowrap ${activeTab === 'personal' ? 'bg-[#8069AE]/10 text-primary border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-transparent'}`}
                                     >
                                         <User size={18} />
                                         Personal Information
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('security')}
-                                        className={`flex items-center gap-3 px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'security' ? 'bg-[#8069AE]/10 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent'}`}
+                                        className={`flex-shrink-0 flex items-center gap-3 px-6 py-4 text-sm font-medium transition-colors border-b-4 md:border-b-0 md:border-l-4 whitespace-nowrap ${activeTab === 'security' ? 'bg-[#8069AE]/10 text-primary border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-transparent'}`}
                                     >
                                         <Shield size={18} />
                                         Login & Security
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveTab('notifications')}
-                                        className={`flex items-center gap-3 px-6 py-4 text-sm font-medium transition-colors ${activeTab === 'notifications' ? 'bg-[#8069AE]/10 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent'}`}
-                                    >
-                                        <Bell size={18} />
-                                        Notifications
                                     </button>
                                 </nav>
                             </div>
@@ -258,12 +251,10 @@ export default function AccountPage() {
                                         <h1 className="text-xl font-bold text-gray-900">
                                             {activeTab === 'personal' && 'Personal Information'}
                                             {activeTab === 'security' && 'Login & Security'}
-                                            {activeTab === 'notifications' && 'Notifications'}
                                         </h1>
                                         <p className="text-sm text-gray-500 mt-1">
                                             {activeTab === 'personal' && 'Manage your personal details and public profile.'}
                                             {activeTab === 'security' && 'Manage your password and account security settings.'}
-                                            {activeTab === 'notifications' && 'Choose what notifications you want to receive.'}
                                         </p>
                                     </div>
                                     {activeTab === 'personal' && (
@@ -405,30 +396,6 @@ export default function AccountPage() {
                                         </div>
                                     )}
 
-                                    {activeTab === 'notifications' && (
-                                        <div className="space-y-4">
-                                            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                                                <div>
-                                                    <h4 className="font-medium text-gray-900">Email Notifications</h4>
-                                                    <p className="text-sm text-gray-500">Receive emails about your account activity</p>
-                                                </div>
-                                                <div className="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
-                                                    <input type="checkbox" name="toggle" id="toggle-email" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-[#8069AE] toggle-checkbox:right-0" defaultChecked />
-                                                    <label htmlFor="toggle-email" className="toggle-label block overflow-hidden h-6 rounded-full bg-[#8069AE] cursor-pointer"></label>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                                                <div>
-                                                    <h4 className="font-medium text-gray-900">Push Notifications</h4>
-                                                    <p className="text-sm text-gray-500">Receive push notifications on your devices</p>
-                                                </div>
-                                                <div className="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
-                                                    <input type="checkbox" name="toggle" id="toggle-push" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300" />
-                                                    <label htmlFor="toggle-push" className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         </div>

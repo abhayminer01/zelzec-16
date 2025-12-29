@@ -96,6 +96,15 @@ const loginUser = async (req, res) => {
             wasRestored = true;
             user.deletionScheduledAt = null;
             await user.save();
+
+            // Send Restoration Email
+            const restoreMailOptions = {
+                from: 'Zelzec <abhayvijayan78@gmail.com>',
+                to: user.email,
+                subject: 'Account Recovered - Zelzec',
+                text: `Hello ${user.full_name},\n\nYour account has been successfully recovered and the deletion request has been cancelled.\n\nTime of recovery: ${new Date().toLocaleString()}`
+            };
+            transporter.sendMail(restoreMailOptions, (err) => { if (err) console.error("Restore email error:", err); });
         }
 
         req.session.user = { id: user._id };
@@ -268,7 +277,18 @@ const resetPassword = async (req, res) => {
 const deleteUser = async (req, res) => {
     try {
         // Soft delete: Schedule for deletion
-        await User.findByIdAndUpdate(req.user._id, { deletionScheduledAt: new Date() });
+        const user = await User.findByIdAndUpdate(req.user._id, { deletionScheduledAt: new Date() });
+
+        // Send Deletion Scheduled Email
+        if (user && user.email) {
+            const deletionMailOptions = {
+                from: 'Zelzec <abhayvijayan78@gmail.com>',
+                to: user.email,
+                subject: 'Account Deletion Scheduled - Zelzec',
+                text: `Hello ${user.full_name},\n\nWe have received your request to delete your account. Your account has been disabled and will be permanently deleted in 15 days.\n\nIf you change your mind, you can recover your account by logging in within this 15-day period.`
+            };
+            transporter.sendMail(deletionMailOptions, (err) => { if (err) console.error("Deletion email error:", err); });
+        }
 
         // Clear session
         req.session.destroy((err) => {

@@ -69,7 +69,7 @@ export const getProductsOfCategory = async (id) => {
 
 export const getRelatedProducts = async (id) => {
   try {
-    const req = await api.get(`/related/${id}`);
+    const req = await api.get(`/related-products/${id}`);
     return req.data;
   } catch (error) {
     return { success: false, message: error.message };

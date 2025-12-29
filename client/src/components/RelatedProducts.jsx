@@ -8,84 +8,23 @@ const RelatedProducts = ({ productId }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Static data for testing/demo
-        const staticData = [
-            {
-                "location": {
-                    "lat": 8.5294885,
-                    "lng": 77.0926011,
-                    "place": "Poovachal"
-                },
-                "_id": "6922821005d669d5d51829bc",
-                "title": "Rolls Royce urgent sale !!",
-                "description": "only genuine contact",
-                "images": [
-                    {
-                        "url": "/uploads/1763869200103-827178320",
-                        "filename": "1763869200103-827178320",
-                        "_id": "6922821005d669d5d51829bd"
-                    }
-                ],
-                "price": 25000000
-            },
-            {
-                "location": {
-                    "lat": 8.52606,
-                    "lng": 76.94438,
-                    "place": "Thiruvananthapuram"
-                },
-                "_id": "690390e9c8d95444262ad03a",
-                "title": "Location Test",
-                "description": "aaaa",
-                "images": [
-                    {
-                        "url": "/uploads/1761841385837-217973775",
-                        "filename": "1761841385837-217973775",
-                        "_id": "690390e9c8d95444262ad03b"
-                    }
-                ],
-                "price": 1222222
-            },
-            {
-                "location": {
-                    "lat": 8.5294885,
-                    "lng": 77.0926011,
-                    "place": "Poovachal"
-                },
-                "_id": "68fd98915acec05be711bc67",
-                "title": "aaaa",
-                "description": "aaa",
-                "images": [
-                    {
-                        "url": "/uploads/1761450128936-737494228",
-                        "filename": "1761450128936-737494228",
-                        "_id": "68fd98915acec05be711bc68"
-                    }
-                ],
-                "price": 12000
-            },
-            {
-                "location": {
-                    "lat": 8.50756,
-                    "lng": 76.93992,
-                    "place": "Thiruvananthapuram"
-                },
-                "_id": "68fd97015acec05be711bc20",
-                "title": "aaa",
-                "description": "aaa",
-                "images": [
-                    {
-                        "url": "/uploads/1761449729416-337212880",
-                        "filename": "1761449729416-337212880",
-                        "_id": "68fd97015acec05be711bc21"
-                    }
-                ],
-                "price": 12000
+        const fetchRelated = async () => {
+            try {
+                setLoading(true);
+                const res = await getRelatedProducts(productId);
+                if (res.success) {
+                    setProducts(res.data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch related products", error);
+            } finally {
+                setLoading(false);
             }
-        ];
+        };
 
-        setProducts(staticData);
-        setLoading(false);
+        if (productId) {
+            fetchRelated();
+        }
     }, [productId]);
 
     if (loading) return <div className="text-gray-500 text-sm">Loading related products...</div>;

@@ -132,16 +132,28 @@ const MobileChatWidget = () => {
                 className={`flex flex-col max-w-[85%] ${isOwn ? 'ml-auto items-end' : 'mr-auto items-start'}`}
               >
                 <div
-                  className={`px-4 py-3 rounded-2xl break-words text-[15px] shadow-sm relative group ${isOwn
+                  className={`px-4 py-2 pb-4 rounded-2xl break-words text-[15px] shadow-sm relative min-w-[80px] group ${isOwn
                     ? 'bg-gradient-to-br from-[#8069AE] to-[#6A5299] text-white rounded-tr-none'
                     : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'
                     }`}
                 >
-                  {msg.text}
+                  <span className="block mb-1">{msg.text}</span>
+                  <div className={`absolute bottom-1 right-2 flex items-center gap-1 leading-none ${isOwn ? 'text-purple-200' : 'text-gray-400'}`}>
+                    <span className="text-[10px] opacity-80">{time}</span>
+                    {isOwn && (
+                      <span className={`${msg.read ? 'text-blue-300' : 'text-purple-200'} ml-0.5`}>
+                        {msg.read ? (
+                          <div className="flex -space-x-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                          </div>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        )}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <span className={`text-[10px] text-gray-400 mt-1 px-1 ${isOwn ? 'text-right' : 'text-left'}`}>
-                  {time}
-                </span>
               </div>
             );
           })

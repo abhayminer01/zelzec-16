@@ -203,16 +203,30 @@ const markAsRead = async (req, res) => {
         const { chatId } = req.body;
         const userId = req.user._id;
 
+        // 1. Update unread count in Chat model
         const update = {};
         update[`unreadCount.${userId}`] = 0;
-
         await Chat.findByIdAndUpdate(chatId, { $set: update });
 
-        // Also update Message documents? (Optional, expensive if many)
-        // For now, we trust unreadCount on Chat model for UI.
+        // 2. Mark messages as read in Message model
+        // We update messages in this chat where WE are the receiver (sender is NOT us) and read is false
+        const result = await Message.updateMany(
+            { chatId: chatId, sender: { $ne: userId }, read: false },
+            { $set: { read: true } }
+        );
 
-        res.status(200).json({ success: true });
+        // 3. Emit real-time event if any messages were updated
+        if (result.modifiedCount > 0) {
+            const io = getIO();
+            // Emit to the chat room. Both users are in it.
+            // The sender will receive this and update their UI (ticks).
+            // The receiver (me) will receive it (optional, but good for sync across devices).
+            io.to(chatId).emit("messages_read", { chatId, readerId: userId });
+        }
+
+        res.status(200).json({ success: true, updatedCount: result.modifiedCount });
     } catch (error) {
+        console.error("Mark as read error:", error);
         res.status(500).json({ success: false, err: error.message });
     }
 }

@@ -173,12 +173,42 @@ const ChatWidget = ({ chatId, style, index }) => {
                                 return (
                                     <div
                                         key={msg._id || msg.createdAt}
-                                        className={`mb-2 max-w-[85%] p-2.5 rounded-xl text-sm break-words ${isOwn
+                                        className={`mb-2 max-w-[85%] p-2.5 rounded-xl text-sm break-words relative group ${isOwn
                                             ? 'ml-auto bg-[#8069AE] text-white rounded-br-none'
                                             : 'mr-auto bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-none'
                                             }`}
                                     >
-                                        {msg.text}
+                                        <div className="mr-8">
+                                            {msg.text}
+                                        </div>
+
+                                        <div className={`absolute bottom-1 right-2 flex items-center gap-1 text-[10px] ${isOwn ? 'text-purple-200' : 'text-gray-400'}`}>
+                                            <span>
+                                                {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                            </span>
+                                            {isOwn && (
+                                                <span className={`${msg.read ? 'text-blue-300' : 'text-purple-200'}`}>
+                                                    {/* Double Tick for Read, Single for Sent. 
+                                                        Actually WhatsApp uses:
+                                                        - 1 Gray Tick (Sent)
+                                                        - 2 Gray Ticks (Delivered)
+                                                        - 2 Blue Ticks (Read)
+                                                        
+                                                        Here we simplify: 
+                                                        - 1 Tick (Sent) -> we assume sent if rendered.
+                                                        - 2 Ticks (Read) -> if msg.read is true.
+                                                    */}
+                                                    {msg.read ? (
+                                                        <div className="flex -space-x-1">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                                        </div>
+                                                    ) : (
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                                    )}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 );
                             })

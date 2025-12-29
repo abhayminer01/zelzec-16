@@ -54,6 +54,9 @@ export const ChatProvider = ({ children }) => {
                         }
                     };
                 });
+
+                // Mark as read immediately if chat is open
+                markAsRead(message.chatId).catch(err => console.error("Failed to mark read on receive", err));
             }
 
             // 2. Update sidebar chat list (preview, order, unread)
@@ -118,10 +121,49 @@ export const ChatProvider = ({ children }) => {
             }
         });
 
+        socket.on("messages_read", ({ chatId, readerId }) => {
+            // Update messages in the chat session to be read
+            setChatState(prev => {
+                const session = prev.chatSessions[chatId];
+                if (!session || !session.messages) return prev;
+
+                // If the reader is the current user, we don't need to update our own view of "my messages sent to them"
+                // But wait, if I read it, I shouldn't see blue ticks on MY messages (sent by me).
+                // I should see blue ticks on messages SENT BY ME when the OTHER person reads them.
+                // So if readerId !== currentUser, then MY messages to them are read.
+
+                const myId = currentUserIdRef.current;
+                if (readerId === myId) return prev; // I read them, nothing changes for my sent messages visualization? 
+                // actually if I read them, the unread count changes, but that's handled by markAsRead API response usually or logic.
+
+                const newMessages = session.messages.map(msg => {
+                    // if msg.sender is me, and it was unread, mark it read
+                    // msg.sender can be object or ID.
+                    const senderId = msg.sender._id || msg.sender;
+                    if (String(senderId) === String(myId)) {
+                        return { ...msg, read: true };
+                    }
+                    return msg;
+                });
+
+                return {
+                    ...prev,
+                    chatSessions: {
+                        ...prev.chatSessions,
+                        [chatId]: {
+                            ...session,
+                            messages: newMessages
+                        }
+                    }
+                };
+            });
+        });
+
         return () => {
             socket.off("receive_message");
             socket.off("typing");
             socket.off("stop_typing");
+            socket.off("messages_read");
         };
     }, [socket]);
 
@@ -245,6 +287,8 @@ export const ChatProvider = ({ children }) => {
         }));
     };
 
+    const typingTimeoutsRef = useRef({});
+
     const updateText = (chatId, text) => {
         setChatState(prev => ({
             ...prev,
@@ -258,7 +302,24 @@ export const ChatProvider = ({ children }) => {
         }));
 
         if (socket) {
-            socket.emit("typing", chatId);
+            // Only emit 'typing' if we haven't already set a timeout (meaning we are starting a typing burst)
+            // OR if we want to refresh the status periodically? 
+            // Most clients just show it until stopped.
+            // Let's emit once per burst.
+            if (!typingTimeoutsRef.current[chatId]) {
+                socket.emit("typing", chatId);
+            }
+
+            // Clear existing timeout to reset the idle timer
+            if (typingTimeoutsRef.current[chatId]) {
+                clearTimeout(typingTimeoutsRef.current[chatId]);
+            }
+
+            // Set new timeout to emit stop_typing after delay
+            typingTimeoutsRef.current[chatId] = setTimeout(() => {
+                socket.emit("stop_typing", chatId);
+                typingTimeoutsRef.current[chatId] = null;
+            }, 2000);
         }
     };
 

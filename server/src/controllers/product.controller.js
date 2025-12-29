@@ -281,7 +281,48 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-// UPDATE PRODUCT
+// GET HOME PAGE DATA (Featured + Category Sections)
+const getHomePageData = async (req, res) => {
+  try {
+    // 1. Featured Products (Latest 10 global)
+    const featuredProducts = await Product.find({})
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .populate('category', 'title icon')
+      .select('title price images location category description');
+
+    // 2. Primary Categories Sections
+    const primaryCategories = await Category.find({ primary: true });
+
+    const sections = [];
+    for (const cat of primaryCategories) {
+      const products = await Product.find({ category: cat._id })
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .select('title price images location description');
+
+      if (products.length > 0) {
+        sections.push({
+          category: cat,
+          products
+        });
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        featured: featuredProducts,
+        sections: sections
+      }
+    });
+
+  } catch (error) {
+    console.error("Error fetching home page data:", error);
+    res.status(500).json({ success: false, message: "Server error fetching home data" });
+  }
+};
+
 const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -375,5 +416,6 @@ module.exports = {
   getProductsForCategory,
   getRelatedProducts,
   deleteProduct,
-  updateProduct
+  updateProduct,
+  getHomePageData
 }

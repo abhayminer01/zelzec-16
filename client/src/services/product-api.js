@@ -96,3 +96,12 @@ export const updateProduct = async (id, data) => {
     return { success: false, message: error.response?.data?.message || error.message };
   }
 }
+
+export const getHomePageData = async () => {
+  try {
+    const req = await api.get('/home');
+    return req.data;
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+}

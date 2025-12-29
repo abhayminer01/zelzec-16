@@ -70,7 +70,7 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ success: false, message: "User not found" });
         }
 
-        // Check for deletion status
+        // 1. Check for PERMANENT deletion (expired > 15 days)
         if (user.deletionScheduledAt) {
             const deletionDate = new Date(user.deletionScheduledAt);
             const now = new Date();
@@ -81,29 +81,40 @@ const loginUser = async (req, res) => {
                 await Product.deleteMany({ user: user._id });
                 await User.findByIdAndDelete(user._id);
                 return res.status(400).json({ success: false, message: "User not found" });
-            } else {
-                // Restore account
-                user.deletionScheduledAt = null;
-                await user.save();
-                // Optionally notify: "Account restored" - we can send a flag in response
             }
         }
 
+        // 2. Verify Password BEFORE restoring soft deletion
         const compare = await bcrypt.compare(password, user.password);
         if (!compare) {
             return res.status(400).json({ success: false, message: "password missmatch" });
         }
 
+        // 3. Handle Restoration (if soft deleted and password correct)
+        let wasRestored = false;
+        if (user.deletionScheduledAt) {
+            wasRestored = true;
+            user.deletionScheduledAt = null;
+            await user.save();
+        }
+
         req.session.user = { id: user._id };
 
-        // Return restored flag if applicable
-        const wasRestored = !!user.deletionScheduledAt; // Wait, we just set it to null above. We need to track before save.
-        // Simplified: The frontend usually just redirects. We can send a message.
-        // Actually, if we restored it, we should probably tell them.
+        // 4. Send Login Notification
+        const mailOptions = {
+            from: 'Zelzec <abhayvijayan78@gmail.com>',
+            to: user.email,
+            subject: 'Zelzec Login Notification',
+            text: `Hello ${user.full_name},\n\nA login to your Zelzec account was detected on ${new Date().toLocaleString()}.`
+        };
+        transporter.sendMail(mailOptions, (err) => { if (err) console.error("Login email error:", err); });
 
-        res.status(200).json({ success: true, message: user.deletionScheduledAt ? "Logged in (Account Restored)" : "Logged in successfully", restored: true });
-        // Note: I already set it to null above, so I can't check it here easily unless I used a temp var.
-        // But for minimal changes:
+        // 5. Response
+        res.status(200).json({
+            success: true,
+            message: wasRestored ? "Logged in (Account Restored)" : "Logged in successfully",
+            restored: wasRestored
+        });
 
     } catch (error) {
         res.status(500).json({ success: false, err: error });

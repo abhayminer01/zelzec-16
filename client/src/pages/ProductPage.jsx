@@ -11,6 +11,7 @@ import NavBar from '../components/NavBar';
 import { startChat } from '../services/chat-api';
 import { getUser } from '../services/auth';
 import { useChat } from '../contexts/ChatContext';
+import Swal from 'sweetalert2';
 
 // Components
 import ProductImageCarousel from '../components/ProductImageCarousel';
@@ -86,8 +87,12 @@ export default function ProductPage() {
     const handleFavorite = async (e) => {
         if (e) e.stopPropagation();
         if (!isAuthenticated) {
-            toast.error("Please login to add favorites");
-            openLogin();
+            Swal.fire({
+                title: 'Login Required',
+                text: 'You need to be logged in to add to favorites.',
+                icon: 'warning',
+                confirmButtonColor: '#8069AE'
+            });
             return;
         }
 

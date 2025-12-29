@@ -4,6 +4,7 @@ import { Heart, MapPin, Calendar, Gauge, Share2 } from 'lucide-react';
 import { toggleFavorite } from '../services/auth';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 
 const CatalogueProductCard = ({ product, navigate, onFavoriteChange }) => {
     const [showShare, setShowShare] = useState(false);
@@ -22,7 +23,12 @@ const CatalogueProductCard = ({ product, navigate, onFavoriteChange }) => {
     const handleFavorite = async (e) => {
         e.stopPropagation();
         if (!userData) {
-            toast.error("Please login to add favorites");
+            Swal.fire({
+                title: 'Login Required',
+                text: 'You need to be logged in to add to favorites.',
+                icon: 'warning',
+                confirmButtonColor: '#8069AE'
+            });
             return;
         }
 

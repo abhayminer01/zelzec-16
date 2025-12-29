@@ -22,10 +22,10 @@ const HomeProductCard = ({ product }) => {
     return (
         <div
             onClick={handleCardClick}
-            className="group flex flex-col bg-white rounded-xl overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-all duration-300 h-full"
+            className="group flex flex-col bg-white rounded-xl overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-all duration-300 h-full border border-gray-100"
         >
-            {/* Image Area - Aspect Ratio Square (1:1) */}
-            <div className="relative aspect-square bg-gray-100 overflow-hidden">
+            {/* Image Area - Aspect Ratio 4:3 */}
+            <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
                 <img
                     src={image}
                     alt={title}
@@ -34,20 +34,20 @@ const HomeProductCard = ({ product }) => {
             </div>
 
             {/* Content Area */}
-            <div className="flex flex-col p-4 gap-1.5">
+            <div className="flex flex-col p-4 gap-1">
                 {/* Title */}
-                <h3 className="text-base font-medium text-gray-900 line-clamp-1 group-hover:text-primary transition-colors">
+                <h3 className="text-sm font-medium text-gray-900 line-clamp-1 group-hover:text-primary transition-colors">
                     {title}
                 </h3>
 
                 {/* Subtitle / Description */}
-                <p className="text-xs md:text-sm text-gray-500 line-clamp-1">
+                <p className="text-xs text-gray-500 line-clamp-1">
                     {subtitle}
                 </p>
 
                 {/* Price */}
                 <div className="mt-2">
-                    <span className="text-lg font-bold text-gray-900">{price}</span>
+                    <span className="text-base font-bold text-gray-900">{price}</span>
                 </div>
             </div>
         </div>

@@ -1,10 +1,11 @@
 import React from "react";
 import { FcGoogle } from "react-icons/fc";
 import { useModal } from "../contexts/ModalContext";
-import { userLogin, getUser } from "../services/auth";
+import { userLogin, getUser, deleteUser, logoutUser } from "../services/auth";
 import { toast } from "sonner";
 import { useAuth } from "../contexts/AuthContext";
 import { X } from "lucide-react";
+import Swal from 'sweetalert2';
 
 export default function LoginComponent() {
   const { isLoginOpen, openLogin, closeLogin, openRegister } = useModal();
@@ -22,9 +23,34 @@ export default function LoginComponent() {
     const res = await userLogin({ email, password });
 
     if (res?.success) {
-      toast.success("User Login", {
-        description: "Successfully Logged in",
-      });
+      if (res.restored) {
+        const result = await Swal.fire({
+          title: 'Account Recovery',
+          text: 'Your account was scheduled for deletion. It has been restored. Do you want to keep it or delete it?',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Recover',
+          cancelButtonText: 'No, Delete it',
+          confirmButtonColor: '#8069AE',
+          cancelButtonColor: '#EF4444'
+        });
+
+        if (result.dismiss === Swal.DismissReason.cancel) {
+          // User wants to delete again
+          await deleteUser();
+          await logoutUser();
+          toast.success("Account scheduled for deletion again.");
+          closeLogin();
+          return;
+        }
+
+        toast.success("Account Restored Successfully");
+      } else {
+        toast.success("User Login", {
+          description: "Successfully Logged in",
+        });
+      }
+
       const user = await getUser();
       login(user);
       closeLogin();

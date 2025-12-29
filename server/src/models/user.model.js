@@ -29,7 +29,11 @@ const userSchema = new mongoose.Schema({
     favorites: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product'
-    }]
+    }],
+    deletionScheduledAt: {
+        type: Date,
+        default: null
+    }
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);

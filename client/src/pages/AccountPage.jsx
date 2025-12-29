@@ -7,6 +7,7 @@ import { toast, Toaster } from 'sonner';
 import { User, Mail, Phone, MapPin, Save, Edit2, X, Shield, Camera, Bell } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 export default function AccountPage() {
     const navigate = useNavigate();
@@ -96,14 +97,28 @@ export default function AccountPage() {
     };
 
     const handleDeleteAccount = async () => {
-        if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+        const result = await Swal.fire({
+            title: 'Delete Account?',
+            text: "Your account will be scheduled for deletion. You can restore it by logging in within 15 days. After 15 days, it will be permanently deleted.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        });
+
+        if (result.isConfirmed) {
             try {
                 const res = await deleteUser();
                 if (res.success) {
+                    await Swal.fire(
+                        'Scheduled!',
+                        'Your account has been scheduled for deletion.',
+                        'success'
+                    );
                     await logoutUser();
                     logout();
                     navigate('/');
-                    toast.success('Account deleted successfully');
                 } else {
                     toast.error(res.message || 'Failed to delete account');
                 }

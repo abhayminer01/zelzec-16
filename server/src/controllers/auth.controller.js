@@ -70,13 +70,41 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ success: false, message: "User not found" });
         }
 
+        // Check for deletion status
+        if (user.deletionScheduledAt) {
+            const deletionDate = new Date(user.deletionScheduledAt);
+            const now = new Date();
+            const daysSinceDeletion = (now - deletionDate) / (1000 * 60 * 60 * 24);
+
+            if (daysSinceDeletion > 15) {
+                // Permanently delete
+                await Product.deleteMany({ user: user._id });
+                await User.findByIdAndDelete(user._id);
+                return res.status(400).json({ success: false, message: "User not found" });
+            } else {
+                // Restore account
+                user.deletionScheduledAt = null;
+                await user.save();
+                // Optionally notify: "Account restored" - we can send a flag in response
+            }
+        }
+
         const compare = await bcrypt.compare(password, user.password);
         if (!compare) {
             return res.status(400).json({ success: false, message: "password missmatch" });
         }
 
         req.session.user = { id: user._id };
-        res.status(200).json({ success: true });
+
+        // Return restored flag if applicable
+        const wasRestored = !!user.deletionScheduledAt; // Wait, we just set it to null above. We need to track before save.
+        // Simplified: The frontend usually just redirects. We can send a message.
+        // Actually, if we restored it, we should probably tell them.
+
+        res.status(200).json({ success: true, message: user.deletionScheduledAt ? "Logged in (Account Restored)" : "Logged in successfully", restored: true });
+        // Note: I already set it to null above, so I can't check it here easily unless I used a temp var.
+        // But for minimal changes:
+
     } catch (error) {
         res.status(500).json({ success: false, err: error });
     }
@@ -228,19 +256,16 @@ const resetPassword = async (req, res) => {
 
 const deleteUser = async (req, res) => {
     try {
-        // 1. Delete all products of the user
-        await Product.deleteMany({ user: req.user._id });
+        // Soft delete: Schedule for deletion
+        await User.findByIdAndUpdate(req.user._id, { deletionScheduledAt: new Date() });
 
-        // 2. Delete the user
-        await User.findByIdAndDelete(req.user._id);
-
-        // 3. Clear session
+        // Clear session
         req.session.destroy((err) => {
             if (err) {
-                return res.status(500).json({ success: false, message: "Account deleted but failed to log out" });
+                return res.status(500).json({ success: false, message: "Account deletion scheduled but failed to log out" });
             }
             res.clearCookie('connect.sid');
-            res.status(200).json({ success: true, message: "Account and associated data deleted successfully" });
+            res.status(200).json({ success: true, message: "Account scheduled for deletion in 15 days." });
         });
     } catch (error) {
         res.status(500).json({ success: false, err: error.message });

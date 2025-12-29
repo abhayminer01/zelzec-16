@@ -50,13 +50,13 @@ export default function SettingsSidebar() {
                             </div>
                         </div>
 
-                        <div className="p-4 rounded-lg hover:bg-gray-50 cursor-pointer flex items-center gap-4 transition-all group">
-                            <div className="p-2 bg-amber-100 text-amber-600 rounded-lg group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                        <div className="p-4 rounded-lg opacity-50 cursor-not-allowed flex items-center gap-4 transition-all group">
+                            <div className="p-2 bg-amber-100 text-amber-600 rounded-lg transition-colors">
                                 <Crown size={20} />
                             </div>
                             <div className="flex flex-col">
                                 <span className="font-semibold text-gray-800">Premium</span>
-                                <span className="text-sm text-gray-500">Upgrade to unlock features</span>
+                                <span className="text-sm text-gray-500">Coming Soon</span>
                             </div>
                         </div>
                     </div>

@@ -79,13 +79,13 @@ export default function ProfilePage() {
                         </button>
 
                         <button
-                            onClick={() => navigate('/premium')}
-                            className="flex items-center justify-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors group border border-gray-200"
+                            disabled
+                            className="flex items-center justify-center gap-3 p-4 bg-gray-50 rounded-xl opacity-50 cursor-not-allowed border border-gray-200"
                         >
-                            <div className="p-2 bg-amber-100 text-amber-600 rounded-lg group-hover:bg-amber-200 transition-colors">
+                            <div className="p-2 bg-amber-100 text-amber-600 rounded-lg transition-colors">
                                 <Crown size={24} />
                             </div>
-                            <span className="font-semibold text-gray-700 group-hover:text-gray-900">Premium</span>
+                            <span className="font-semibold text-gray-700">Premium (Coming Soon)</span>
                         </button>
 
                         <button

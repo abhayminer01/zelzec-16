@@ -23,6 +23,7 @@ import { visitorCount } from '../services/auth'
 import { useNavigate } from 'react-router-dom';
 import Swal from "sweetalert2";
 import ProductScrollSection from '../components/ProductScrollSection';
+import HomeProductCard from '../components/HomeProductCard';
 
 export default function HomePage() {
   const [category, setCategory] = useState([]);
@@ -103,9 +104,7 @@ export default function HomePage() {
     }
   }
 
-  const handleCardClick = (id) => {
-    navigate(`/product/${id}`);
-  }
+
 
   const handleCategoryClick = (id) => {
     navigate(`/category/${id}`)
@@ -169,46 +168,10 @@ export default function HomePage() {
               <p className="text-gray-500">No products found</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-              {featuredProducts.map((p) => {
-                const Icon = Icons[p.category?.icon] || Icons.Package;
-                return (
-                  <div
-                    onClick={() => handleCardClick(p._id)}
-                    key={p._id}
-                    className="group bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:border-gray-300 transition-all duration-300 cursor-pointer hover:-translate-y-1"
-                  >
-                    <div className="relative w-full h-36 sm:h-48 bg-gray-100 overflow-hidden">
-                      <img
-                        src={p.images?.[0]?.url ? `${import.meta.env.VITE_BACKEND_URL}${p.images[0].url}` : '/placeholder.png'}
-                        alt={p.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      {p.location?.place && (
-                        <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-md text-white text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <Icons.MapPin size={10} />
-                          <span className="truncate max-w-[100px]">{p.location.place}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-3">
-                      <div className="flex justify-between items-start mb-1">
-                        <p className="text-lg font-bold text-primary">₹{p.price?.toLocaleString()}</p>
-                      </div>
-                      <h2 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-1 group-hover:text-primary transition-colors">
-                        {p.title}
-                      </h2>
-                      <p className="text-xs text-gray-500 line-clamp-1 mb-2">
-                        {p.description}
-                      </p>
-                      <div className="pt-2 border-t border-gray-50 flex items-center gap-2 text-xs text-gray-400">
-                        {Icon && <Icon className="w-3 h-3" />}
-                        <span className="truncate">{p.category?.title}</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6">
+              {featuredProducts.map((p) => (
+                <HomeProductCard key={p._id} product={p} />
+              ))}
             </div>
           )}
         </section>
@@ -220,7 +183,7 @@ export default function HomePage() {
             title={`Latest in ${section.category.title}`}
             products={section.products}
             categoryId={section.category._id}
-            viewAllLink={`/catalogue?category=${section.category._id}`}
+            viewAllLink={`/category/${section.category._id}`}
           />
         ))}
 

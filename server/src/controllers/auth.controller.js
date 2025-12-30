@@ -41,6 +41,10 @@ const registerUser = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Generate OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
         user = await User.create({
             email: email,
             password: hashedPassword,
@@ -48,11 +52,23 @@ const registerUser = async (req, res) => {
             full_name: full_name,
             address: address,
             location: location,
-            googleId: googleId
+            googleId: googleId,
+            isVerified: false,
+            otp: otp,
+            otpExpires: otpExpires
         });
 
+        // Send Verification OTP
+        const otpMailOptions = {
+            from: 'Zelzec <abhayvijayan78@gmail.com>',
+            to: email,
+            subject: 'Verify your Email - Zelzec',
+            text: `Your OTP for email verification is: ${otp}. It is valid for 10 minutes.`
+        };
+        transporter.sendMail(otpMailOptions, (err) => { if (err) console.error("Verification email error:", err); });
+
         req.session.user = { id: user._id };
-        res.status(200).json({ success: true, user: user._id });
+        res.status(200).json({ success: true, user: user._id, message: "Registration successful. Please verify your email.", verificationRequired: true, email: email });
 
     } catch (error) {
         res.status(500).json({ success: false, err: error });
@@ -347,6 +363,79 @@ const getFavorites = async (req, res) => {
     }
 };
 
+const verifyEmail = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        if (user.isVerified) {
+            return res.status(200).json({ success: true, message: "Email already verified" });
+        }
+
+        if (user.otp !== otp) {
+            return res.status(400).json({ success: false, message: "Invalid OTP" });
+        }
+
+        if (user.otpExpires < Date.now()) {
+            return res.status(400).json({ success: false, message: "OTP has expired" });
+        }
+
+        user.isVerified = true;
+        user.otp = undefined;
+        user.otpExpires = undefined;
+        await user.save();
+
+        res.status(200).json({ success: true, message: "Email verified successfully" });
+
+    } catch (error) {
+        res.status(500).json({ success: false, err: error.message });
+    }
+};
+
+const resendVerificationOtp = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        if (user.isVerified) {
+            return res.status(200).json({ success: true, message: "Email already verified" });
+        }
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+        user.otp = otp;
+        user.otpExpires = otpExpires;
+        await user.save();
+
+        const mailOptions = {
+            from: 'Zelzec <abhayvijayan78@gmail.com>',
+            to: email,
+            subject: 'Resend Verification OTP - Zelzec',
+            text: `Your new OTP for email verification is: ${otp}. It is valid for 10 minutes.`
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.log(error);
+                return res.status(500).json({ success: false, message: "Failed to send OTP", error: error.message });
+            }
+            res.status(200).json({ success: true, message: "OTP sent successfully" });
+        });
+
+    } catch (error) {
+        res.status(500).json({ success: false, err: error.message });
+    }
+};
+
 module.exports = {
     checkAuth,
     registerUser,
@@ -359,5 +448,7 @@ module.exports = {
     resetPassword,
     deleteUser,
     toggleFavorite,
-    getFavorites
+    getFavorites,
+    verifyEmail,
+    resendVerificationOtp
 }

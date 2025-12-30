@@ -29,9 +29,9 @@ export default function HomePage() {
   const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const { openLogin } = useModal();
+  const { openLogin, openVerifyEmail } = useModal();
   const { step, nextStep, clearStep } = useSell();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, userData } = useAuth();
 
   const navigate = useNavigate()
 
@@ -82,6 +82,12 @@ export default function HomePage() {
     if (!isAuthenticated) {
       openLogin();
     } else {
+      // Check for verification
+      if (!userData?.isVerified) {
+        toast.error("Please verify your email to post ads.");
+        openVerifyEmail(userData?.email);
+        return;
+      }
       if (step === 0) {
         try {
           const res = await getListedProducts();

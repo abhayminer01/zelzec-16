@@ -4,14 +4,16 @@ import MobileBottomNav from '../components/MobileBottomNav';
 import Footer from '../components/Footer';
 import { getUser, updateUser, deleteUser, logoutUser, sendOtp, verifyOtp, resetPassword } from '../services/auth';
 import { toast, Toaster } from 'sonner';
-import { User, Mail, Phone, MapPin, Save, Edit2, X, Shield, Camera, Bell } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Save, Edit2, X, Shield, Camera, Bell, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useModal } from '../contexts/ModalContext';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
 export default function AccountPage() {
     const navigate = useNavigate();
     const { logout } = useAuth();
+    const { openVerifyEmail } = useModal();
     const [user, setUser] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
@@ -244,12 +246,24 @@ export default function AccountPage() {
 
                                     <div className="flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 rounded-xl border border-gray-100 mx-auto w-fit">
                                         <div className="p-1.5 bg-white rounded-full shadow-sm">
-                                            <Shield size={14} className="text-[#8069AE]" />
+                                            {user?.isVerified ? (
+                                                <ShieldCheck size={14} className="text-green-500" />
+                                            ) : (
+                                                <Shield size={14} className="text-red-500" />
+                                            )}
                                         </div>
-                                        <span className="text-sm font-medium text-gray-600">
-                                            Member since {new Date(user?.createdAt || Date.now()).getFullYear()}
+                                        <span className={`text-sm font-medium ${user?.isVerified ? 'text-green-600' : 'text-red-500'}`}>
+                                            {user?.isVerified ? 'Verified Member' : 'Unverified'}
                                         </span>
                                     </div>
+                                    {!user?.isVerified && (
+                                        <button
+                                            onClick={() => openVerifyEmail(user?.email)}
+                                            className="mt-3 text-xs text-primary underline hover:text-primary/80"
+                                        >
+                                            Verify Email Now
+                                        </button>
+                                    )}
                                 </div>
                             </div>
 

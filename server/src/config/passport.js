@@ -22,6 +22,7 @@ passport.use(new GoogleStrategy({
                 if (user) {
                     // Link Google account to existing user
                     user.googleId = profile.id;
+                    if (!user.isVerified) user.isVerified = true; // Trust Google verified email
                     await user.save();
                     return done(null, user);
                 }
@@ -32,6 +33,7 @@ passport.use(new GoogleStrategy({
                 googleId: profile.id,
                 email: profile.emails && profile.emails[0] ? profile.emails[0].value : '',
                 full_name: profile.displayName,
+                isVerified: true,
                 // Leave other fields empty/undefined for now
             });
 

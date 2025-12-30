@@ -17,7 +17,7 @@ import { toast } from "sonner";
 export default function NavBar() {
   const navigate = useNavigate();
   const { isAuthenticated, login, logout, userData } = useAuth();
-  const { openLogin, openRegister } = useModal();
+  const { openLogin, openRegister, openVerifyEmail } = useModal();
   const { nextStep } = useSell();
   const { toggleSidebar, chatState, loadChats } = useChat();
   const { openSettings } = useSettings();
@@ -204,6 +204,11 @@ export default function NavBar() {
                 disabled={isCheckingLimit}
                 onClick={async () => {
                   if (isCheckingLimit) return;
+                  if (!userData?.isVerified) {
+                    toast.error("Please verify your email to sell products.");
+                    openVerifyEmail(userData?.email);
+                    return;
+                  }
                   setIsCheckingLimit(true);
                   try {
                     const res = await getListedProducts();

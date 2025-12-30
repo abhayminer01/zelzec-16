@@ -30,6 +30,12 @@ router.get('/google/callback', (req, res, next) => {
     })(req, res, next);
 });
 
+
+
+// Email Verification Routes
+router.post('/verify-email', authController.verifyEmail);
+router.post('/resend-verification', authController.resendVerificationOtp);
+
 // Update Password Routes
 router.post('/send-otp', authController.sendOtp);
 router.post('/verify-otp', authController.verifyOtp);

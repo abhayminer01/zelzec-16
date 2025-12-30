@@ -8,7 +8,7 @@ import { X } from "lucide-react";
 import Swal from 'sweetalert2';
 
 export default function LoginComponent() {
-  const { isLoginOpen, openLogin, closeLogin, openRegister } = useModal();
+  const { isLoginOpen, openLogin, closeLogin, openRegister, openForgotPassword } = useModal();
   const { login } = useAuth();
 
   const handleBackdropClick = (e) => {
@@ -97,7 +97,13 @@ export default function LoginComponent() {
             />
           </div>
 
-          <p className="text-right text-sm text-primary cursor-pointer hover:underline">
+          <p
+            onClick={() => {
+              closeLogin();
+              openForgotPassword();
+            }}
+            className="text-right text-sm text-primary cursor-pointer hover:underline"
+          >
             Forgot password?
           </p>
 

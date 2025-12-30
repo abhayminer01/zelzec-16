@@ -5,9 +5,11 @@ import { useSearchParams } from 'react-router-dom';
 import LoginComponent from './LoginComponent';
 import RegisterComponent from './RegisterComponent';
 import CompleteProfileModal from './CompleteProfileModal';
+import VerifyEmailModal from './VerifyEmailModal';
+import ForgotPasswordModal from './ForgotPasswordModal';
 
 export default function GlobalModals() {
-    const { isLoginOpen, isRegisterOpen, isCompleteProfileOpen, openRegister, openCompleteProfile } = useModal();
+    const { isLoginOpen, isRegisterOpen, isCompleteProfileOpen, openRegister, openCompleteProfile, isVerifyEmailOpen, verificationEmail, isForgotPasswordOpen } = useModal();
     const { userData } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     const [registerPrefill, setRegisterPrefill] = useState(null);
@@ -62,6 +64,8 @@ export default function GlobalModals() {
             {isLoginOpen && <LoginComponent />}
             {isRegisterOpen && <RegisterComponent prefillData={registerPrefill} />}
             {isCompleteProfileOpen && <CompleteProfileModal />}
+            {isVerifyEmailOpen && <VerifyEmailModal email={verificationEmail} />}
+            {isForgotPasswordOpen && <ForgotPasswordModal />}
         </>
     );
 }

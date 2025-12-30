@@ -10,6 +10,18 @@ export const ModalProvider = ({ children }) => {
     const openCompleteProfile = () => setIsCompleteProfileOpen(true);
     const closeCompleteProfile = () => setIsCompleteProfileOpen(false);
 
+    const [isVerifyEmailOpen, setIsVerifyEmailOpen] = useState(false);
+    const [verificationEmail, setVerificationEmail] = useState("");
+    const openVerifyEmail = (email) => {
+        if (email) setVerificationEmail(email);
+        setIsVerifyEmailOpen(true);
+    }
+    const closeVerifyEmail = () => setIsVerifyEmailOpen(false);
+
+    const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
+    const openForgotPassword = () => setIsForgotPasswordOpen(true);
+    const closeForgotPassword = () => setIsForgotPasswordOpen(false);
+
     const openLogin = () => setIsLoginOpen(true);
     const closeLogin = () => setIsLoginOpen(false);
 
@@ -26,7 +38,15 @@ export const ModalProvider = ({ children }) => {
             closeRegister,
             isCompleteProfileOpen,
             openCompleteProfile,
-            closeCompleteProfile
+            closeCompleteProfile,
+            isVerifyEmailOpen,
+            openVerifyEmail,
+            closeVerifyEmail,
+            closeVerifyEmail,
+            verificationEmail,
+            isForgotPasswordOpen,
+            openForgotPassword,
+            closeForgotPassword
         }
         }>
             {children}

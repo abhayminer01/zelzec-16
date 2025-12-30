@@ -158,3 +158,27 @@ export const getFavorites = async () => {
         return error?.response?.data || { success: false, message: "Network error" };
     }
 }
+
+export const verifyEmail = async (email, otp) => {
+    try {
+        const req = await api.post('/api/v1/auth/verify-email', { email, otp }, {
+            withCredentials: true
+        });
+        return req.data;
+    } catch (error) {
+        console.log(error);
+        return error?.response?.data || { success: false, message: "Network error" };
+    }
+}
+
+export const resendVerificationOtp = async (email) => {
+    try {
+        const req = await api.post('/api/v1/auth/resend-verification', { email }, {
+            withCredentials: true
+        });
+        return req.data;
+    } catch (error) {
+        console.log(error);
+        return error?.response?.data || { success: false, message: "Network error" };
+    }
+}

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function RegisterComponent({ prefillData }) {
-  const { closeRegister, openLogin } = useModal();
+  const { closeRegister, openLogin, openVerifyEmail } = useModal();
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
 
@@ -15,7 +15,9 @@ export default function RegisterComponent({ prefillData }) {
     repeatPassword: "",
     fullName: prefillData?.full_name || "",
     mobile: "",
-    address: "",
+    addressHouse: "",
+    addressStreet: "",
+    addressCity: "",
     googleId: prefillData?.googleId || null
   });
 
@@ -39,16 +41,16 @@ export default function RegisterComponent({ prefillData }) {
       return toast.error("Passwords do not match");
     }
 
-    if (!/^\d{10}$/.test(formData.mobile)) {
-      return toast.error("Mobile number must be 10 digits");
+    if (!/^[6-9]\d{9}$/.test(formData.mobile)) {
+      return toast.error("Please enter a valid Indian mobile number");
     }
 
     if (formData.fullName.trim() === "") {
       return toast.error("Full name is required");
     }
 
-    if (formData.address.trim() === "") {
-      return toast.error("Address is required");
+    if (formData.addressHouse.trim() === "" || formData.addressStreet.trim() === "" || formData.addressCity.trim() === "") {
+      return toast.error("All address fields are required");
     }
 
     setLoading(true);
@@ -81,8 +83,8 @@ export default function RegisterComponent({ prefillData }) {
       email: formData.email,
       password: formData.password,
       full_name: formData.fullName,
-      mobile: formData.mobile,
-      address: formData.address,
+      mobile: `+91${formData.mobile}`,
+      address: `${formData.addressHouse}, ${formData.addressStreet}, ${formData.addressCity}`,
       location,
       googleId: formData.googleId
     };
@@ -90,12 +92,19 @@ export default function RegisterComponent({ prefillData }) {
     try {
       const res = await registerUser(payload);
       if (res?.success) {
-        toast.success("User Registration", { description: "Successfully Registered User" });
-        const user = await getUser();
-        login(user);
-        closeRegister();
+        if (res.verificationRequired) {
+          toast.success("Registration Successful", { description: "Please verify your email" });
+          closeRegister();
+          // Assuming openVerifyEmail is available from useModal, need to update the destructuring below
+          openVerifyEmail(payload.email);
+        } else {
+          toast.success("User Registration", { description: "Successfully Registered User" });
+          const user = await getUser();
+          login(user);
+          closeRegister();
+        }
       } else {
-        toast.error("Something Occurred while Registering", {
+        toast.error("Registration Failed", {
           description: `${res?.message || res?.err}`,
         });
       }
@@ -194,36 +203,65 @@ export default function RegisterComponent({ prefillData }) {
             <label className="block text-sm font-medium mb-1">
               Mobile Number <span className="text-red-500 ml-1">*</span>
             </label>
+            <div className="flex">
+              <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                +91
+              </span>
+              <input
+                type="text"
+                name="mobile"
+                value={formData.mobile}
+                onChange={handleChange}
+                placeholder="Enter 10-digit mobile number"
+                required
+                maxLength={10}
+                className="w-full border border-gray-300 rounded-r-lg h-10 px-3 focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label className="block text-sm font-medium">
+              Address <span className="text-red-500 ml-1">*</span>
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input
+                type="text"
+                name="addressHouse"
+                value={formData.addressHouse}
+                onChange={handleChange}
+                placeholder="House/Building No."
+                required
+                className="w-full border border-gray-300 rounded-lg h-10 px-3 focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <input
+                type="text"
+                name="addressCity"
+                value={formData.addressCity}
+                onChange={handleChange}
+                placeholder="City/Place"
+                required
+                className="w-full border border-gray-300 rounded-lg h-10 px-3 focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
             <input
               type="text"
-              name="mobile"
-              value={formData.mobile}
+              name="addressStreet"
+              value={formData.addressStreet}
               onChange={handleChange}
-              placeholder="Enter your mobile number"
+              placeholder="Street/Area Name"
               required
               className="w-full border border-gray-300 rounded-lg h-10 px-3 focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Current Address <span className="text-red-500 ml-1">*</span>
-            </label>
-            <textarea
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="Enter your address"
-              required
-              className="border border-gray-300 w-full rounded-lg p-3 h-24 resize-none focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-            />
-          </div>
-
           <button
             type="submit"
-            className="bg-primary hover:bg-primary/90 text-white rounded-lg h-10 mt-1 font-medium transition"
+            disabled={loading}
+            className="bg-primary hover:bg-primary/90 text-white rounded-lg h-10 mt-1 font-medium transition disabled:bg-primary/70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            Sign Up
+            {loading && <div className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>}
+            {loading ? "Registering..." : "Sign Up"}
           </button>
 
           <p className="text-center text-sm text-gray-600 mt-4">
@@ -235,7 +273,7 @@ export default function RegisterComponent({ prefillData }) {
               }}
               className="text-primary font-medium cursor-pointer hover:underline"
             >
-              {loading ? "Registering..." : "Sign Up"}
+              Sign In
             </span>
           </p>
         </form>

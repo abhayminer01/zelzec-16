@@ -8,4 +8,9 @@ router.get('/', adminAuthMiddleware, adminController.getAllAdmins);
 router.put('/:id', adminAuthMiddleware, adminController.updateAdmin);
 router.delete('/:id', adminAuthMiddleware, adminController.deleteAdmin);
 
+// User Management Routes
+router.get('/users', adminAuthMiddleware, adminController.getAllUsers);
+router.put('/users/:id', adminAuthMiddleware, adminController.updateAnyUser);
+router.delete('/users/:id', adminAuthMiddleware, adminController.deleteAnyUser);
+
 module.exports = router;

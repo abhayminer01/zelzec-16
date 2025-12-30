@@ -4,18 +4,19 @@ import { registerUser, getUser } from "../services/auth";
 import { toast } from "sonner";
 import { useAuth } from "../contexts/AuthContext";
 
-export default function RegisterComponent() {
+export default function RegisterComponent({ prefillData }) {
   const { closeRegister, openLogin } = useModal();
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    email: "",
+    email: prefillData?.email || "",
     password: "",
     repeatPassword: "",
-    full_name: "",
+    fullName: prefillData?.full_name || "",
     mobile: "",
     address: "",
+    googleId: prefillData?.googleId || null
   });
 
   const handleChange = (e) => {
@@ -83,6 +84,7 @@ export default function RegisterComponent() {
       mobile: formData.mobile,
       address: formData.address,
       location,
+      googleId: formData.googleId
     };
 
     try {

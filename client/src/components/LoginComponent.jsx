@@ -118,6 +118,7 @@ export default function LoginComponent() {
           {/* Google button */}
           <button
             type="button"
+            onClick={() => window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/google`}
             className="flex items-center justify-center gap-2 bg-primary hover:bg-primary text-white rounded-lg h-10 transition font-medium"
           >
             <FcGoogle />

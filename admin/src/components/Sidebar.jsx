@@ -9,14 +9,16 @@ import {
   Settings,
 } from "lucide-react";
 
+import { NavLink } from "react-router-dom";
+
 export default function Sidebar() {
   const mainMenu = [
-    { name: "Dashboard", icon: <LayoutDashboard size={18} /> },
-    { name: "Users", icon: <Users size={18} /> },
-    { name: "Products", icon: <Package size={18} /> },
-    { name: "Admins", icon: <UserCog size={18} /> },
-    { name: "Categories", icon: <Folder size={18} /> },
-    { name: "Status", icon: <Activity size={18} /> },
+    { name: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/dashboard" },
+    { name: "Users", icon: <Users size={18} />, path: "/dashboard/users" },
+    { name: "Products", icon: <Package size={18} />, path: "/dashboard/products" },
+    { name: "Admins", icon: <UserCog size={18} />, path: "/dashboard/admins" },
+    { name: "Categories", icon: <Folder size={18} />, path: "/dashboard/categories" },
+    { name: "Status", icon: <Activity size={18} />, path: "/dashboard/status" },
   ];
 
   return (
@@ -29,15 +31,22 @@ export default function Sidebar() {
         </div>
 
         {/* Main Menu */}
-        <nav className="mt-4">
+        <nav className="mt-4 flex flex-col">
           {mainMenu.map((item, index) => (
-            <button
+            <NavLink
+              to={item.path}
               key={index}
-              className={`flex items-center gap-3 w-full px-6 py-2.5 text-sm text-gray-600 hover:bg-gray-100 hover:text-black transition-all`}
+              end={item.path === "/dashboard"}
+              className={({ isActive }) =>
+                `flex items-center gap-3 w-full px-6 py-2.5 text-sm transition-all ${isActive
+                  ? "bg-primary/10 text-primary border-r-4 border-primary font-medium"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-black"
+                }`
+              }
             >
               {item.icon}
               <span>{item.name}</span>
-            </button>
+            </NavLink>
           ))}
         </nav>
       </div>

@@ -1,9 +1,7 @@
 import React from 'react'
 import NavBar from '../components/NavBar'
 import * as Icons from "lucide-react"
-import LoginComponent from '../components/LoginComponent'
 import { useModal } from '../contexts/ModalContext'
-import RegisterComponent from '../components/RegisterComponent';
 import { Toaster, toast } from 'sonner'
 import { useSell } from '../contexts/SellContext';
 import SelectCategory from '../components/sell/SelectCategory';
@@ -20,7 +18,7 @@ import { getHomePageData, getListedProducts } from '../services/product-api'
 import Footer from '../components/Footer'
 import { useAuth } from '../contexts/AuthContext'
 import { visitorCount } from '../services/auth'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Swal from "sweetalert2";
 import ProductScrollSection from '../components/ProductScrollSection';
 import HomeProductCard from '../components/HomeProductCard';
@@ -31,11 +29,14 @@ export default function HomePage() {
   const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const { isLoginOpen, isRegisterOpen, openLogin, closeLogin } = useModal();
+  const { openLogin } = useModal();
   const { step, nextStep, clearStep } = useSell();
   const { isAuthenticated } = useAuth();
 
   const navigate = useNavigate()
+
+  const [registerPrefill, setRegisterPrefill] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     fetchHomeData();
@@ -115,8 +116,7 @@ export default function HomePage() {
       <Toaster position='top-right' />
       <NavBar />
       <MobileBottomNav />
-      {isLoginOpen && <LoginComponent />}
-      {isRegisterOpen && <RegisterComponent />}
+      <MobileBottomNav />
       {step === 1 && <SelectCategory />}
       {step === 2 && <AddDetails />}
       {step === 3 && <UploadImage />}

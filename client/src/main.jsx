@@ -23,7 +23,7 @@ import CataloguePage from './pages/CataloguePage';
 import MobileChatSidebar from './components/MobileChatSidebar';
 import MobileChatWidget from './components/MobileChatWidget';
 import FavoritesPage from './pages/FavoritesPage';
-// ... rest of imports
+import GlobalModals from './components/GlobalModals';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -57,6 +57,7 @@ createRoot(document.getElementById('root')).render(
                     <MobileChatWidget />
                     <SettingsSidebar />
                   </div>
+                  <GlobalModals />
                 </Router>
               </SettingsProvider>
             </ChatProvider>

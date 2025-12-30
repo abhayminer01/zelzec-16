@@ -29,7 +29,7 @@ const getUser = async (req, res) => {
 
 const registerUser = async (req, res) => {
     try {
-        const { email, password, mobile, full_name, address, location } = req.body;
+        const { email, password, mobile, full_name, address, location, googleId } = req.body;
         if (!email || !password) {
             return res.status(400).json({ success: false, message: "All Fields are required!" });
         }
@@ -47,7 +47,8 @@ const registerUser = async (req, res) => {
             mobile: mobile,
             full_name: full_name,
             address: address,
-            location: location
+            location: location,
+            googleId: googleId
         });
 
         req.session.user = { id: user._id };

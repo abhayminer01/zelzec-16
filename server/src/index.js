@@ -36,6 +36,10 @@ app.use(sessionMiddleware);
 // Initialize Socket.IO
 initializeSocket(server, sessionMiddleware);
 
+const passport = require('./config/passport');
+app.use(passport.initialize());
+app.use(passport.session());
+
 // app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.use('/api/v1/auth', require('./routes/auth.route'));
@@ -61,5 +65,6 @@ app.get("/uploads/:filename", (req, res) => {
 const PORT = process.env.PORT;
 server.listen(PORT, () => {
   console.log(`Server Running On Port : ${PORT}`);
+  console.log(`Checking Admin Routes...`);
   connectDatabase();
 });

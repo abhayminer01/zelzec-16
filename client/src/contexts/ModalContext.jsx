@@ -5,6 +5,10 @@ const ModalContext = createContext();
 export const ModalProvider = ({ children }) => {
     const [isLoginOpen, setIsLoginOpen] = useState(false);
     const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+    const [isCompleteProfileOpen, setIsCompleteProfileOpen] = useState(false);
+
+    const openCompleteProfile = () => setIsCompleteProfileOpen(true);
+    const closeCompleteProfile = () => setIsCompleteProfileOpen(false);
 
     const openLogin = () => setIsLoginOpen(true);
     const closeLogin = () => setIsLoginOpen(false);
@@ -12,15 +16,18 @@ export const ModalProvider = ({ children }) => {
     const openRegister = () => setIsRegisterOpen(true);
     const closeRegister = () => setIsRegisterOpen(false);
 
-    return(
-        <ModalContext.Provider value={{ 
-                isLoginOpen, 
-                isRegisterOpen, 
-                openLogin, 
-                closeLogin, 
-                openRegister, 
-                closeRegister 
-            }
+    return (
+        <ModalContext.Provider value={{
+            isLoginOpen,
+            isRegisterOpen,
+            openLogin,
+            closeLogin,
+            openRegister,
+            closeRegister,
+            isCompleteProfileOpen,
+            openCompleteProfile,
+            closeCompleteProfile
+        }
         }>
             {children}
         </ModalContext.Provider>

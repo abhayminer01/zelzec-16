@@ -18,7 +18,7 @@ export const checkAuth = async () => {
 
 export const visitorCount = async () => {
     try {
-        const req = await api.get('/api/v1/visitor/increment', {
+        const req = await api.post('/api/v1/visitor/record', {}, {
             withCredentials: true
         });
         return req.data;

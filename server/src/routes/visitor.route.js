@@ -1,7 +1,8 @@
-const { incrementVisitor } = require("../controllers/visitor.controller");
+const express = require('express');
+const router = express.Router();
+const visitorController = require('../controllers/visitor.controller');
 
-const router = require("express").Router();
-
-router.get("/increment", incrementVisitor);
+router.post('/record', visitorController.recordVisit);
+router.get('/stats', visitorController.getVisitorStats);
 
 module.exports = router;

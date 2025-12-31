@@ -17,7 +17,6 @@ import MobileBottomNav from '../components/MobileBottomNav';
 import { getHomePageData, getListedProducts } from '../services/product-api'
 import Footer from '../components/Footer'
 import { useAuth } from '../contexts/AuthContext'
-import { visitorCount } from '../services/auth'
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Swal from "sweetalert2";
 import ProductScrollSection from '../components/ProductScrollSection';
@@ -41,16 +40,8 @@ export default function HomePage() {
   useEffect(() => {
     fetchHomeData();
     fetchPrimaryCategories();
-    incrementVisitor();
   }, []);
 
-  const incrementVisitor = async () => {
-    try {
-      const res = await visitorCount();
-    } catch (error) {
-      // Silent error
-    }
-  }
 
   const fetchHomeData = async () => {
     setLoading(true);

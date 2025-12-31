@@ -24,6 +24,7 @@ import MobileChatSidebar from './components/MobileChatSidebar';
 import MobileChatWidget from './components/MobileChatWidget';
 import FavoritesPage from './pages/FavoritesPage';
 import GlobalModals from './components/GlobalModals';
+import VisitorTracker from './components/VisitorTracker';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -45,6 +46,7 @@ createRoot(document.getElementById('root')).render(
                     <Route path='/myads' element={<MyAdsPage />} />
                     <Route path='/favorites' element={<FavoritesPage />} />
                   </Routes>
+                  <VisitorTracker />
                   <div className="hidden md:block">
                     {/* Multi-window Chat Container */}
                     <ChatContainer />

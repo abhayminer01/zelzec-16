@@ -67,6 +67,8 @@ const getAllProducts = async (req, res) => {
     // 1️⃣ Build Query Object
     const query = {};
 
+    console.log("DEBUG: getAllProducts query params:", req.query);
+
     // Search (Text search on title, description, form_data OR Category Name)
     if (search) {
       // 1. Find categories matching the search term
@@ -98,6 +100,17 @@ const getAllProducts = async (req, res) => {
     // Location Filter (Regex for partial match)
     if (location) {
       query['location.place'] = { $regex: location, $options: 'i' };
+    }
+
+    // Filter by Unknown User (Admin feature)
+    if (req.query.unknownUser === 'true') {
+      const validUserIds = await User.find().distinct('_id');
+      // Find products where user is NOT in validUserIds (Orphans) OR is explicitly null
+      query.$or = [
+        { user: { $nin: validUserIds } },
+        { user: null },
+        { user: { $exists: false } }
+      ];
     }
 
     // Dynamic Filters (from form_data)
@@ -136,7 +149,7 @@ const getAllProducts = async (req, res) => {
     // 4️⃣ Execute Query
     const products = await Product.find(query)
       .populate('category', 'title icon')
-      .populate('user', 'name')
+      .populate('user', 'full_name')
       .sort(sortOptions)
       .skip(skip)
       .limit(limitNum);

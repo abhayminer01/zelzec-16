@@ -1,5 +1,6 @@
 const Admin = require("../models/admin.model");
 const User = require("../models/user.model");
+const Product = require("../models/product.model");
 const bcrypt = require('bcrypt');
 
 const loginAdmin = async (req, res) => {
@@ -137,6 +138,45 @@ const deleteAnyUser = async (req, res) => {
   }
 };
 
+const deleteAnyProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body; // Reason from admin
+
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    // Email Notification Logic
+    if (product.user) {
+      const user = await User.findById(product.user);
+      if (user && user.email) {
+        const emailSubject = "Product Removal Notification - Zelzec";
+        const emailText = `Hello ${user.full_name},\n\nYour product "${product.title}" has been removed by the administrator.\n\nReason: ${reason || "Violation of policies or request for removal."}\n\nIf you have any questions, please contact support.`;
+
+        // Use the email service
+        const { sendEmail } = require('../services/email.service');
+        await sendEmail(user.email, emailSubject, emailText);
+      }
+    }
+
+    // Proceed to delete
+    await Product.findByIdAndDelete(id);
+
+    // Decrement user product count logic
+    if (product.user) {
+      await User.findByIdAndUpdate(product.user, { $inc: { products: -1 } });
+    }
+
+    res.status(200).json({ success: true, message: "Product deleted and user notified" });
+  } catch (error) {
+    console.error("Delete Product Error:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
 const checkSession = async (req, res) => {
   // If the request reaches here, the middleware has already verified the session
   res.status(200).json({ success: true, message: "Session Valid", data: req.session.admin });
@@ -151,5 +191,6 @@ module.exports = {
   getAllUsers,
   updateAnyUser,
   deleteAnyUser,
+  deleteAnyProduct,
   checkSession
 }

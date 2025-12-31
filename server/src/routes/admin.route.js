@@ -17,4 +17,7 @@ router.get('/users', adminAuthMiddleware, adminController.getAllUsers);
 router.put('/users/:id', adminAuthMiddleware, adminController.updateAnyUser);
 router.delete('/users/:id', adminAuthMiddleware, adminController.deleteAnyUser);
 
+// Product Management Routes
+router.delete('/product/:id', adminAuthMiddleware, adminController.deleteAnyProduct);
+
 module.exports = router;

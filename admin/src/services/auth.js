@@ -6,6 +6,15 @@ const api = axios.create({
   timeout: 5000,
 });
 
+export const checkSession = async () => {
+  try {
+    const res = await api.get("/api/v1/admin/check-session");
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+};
+
 export const loginUser = async (payload) => {
   try {
     const req = await api.post('/api/v1/admin/login', payload);

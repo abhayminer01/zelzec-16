@@ -137,6 +137,11 @@ const deleteAnyUser = async (req, res) => {
   }
 };
 
+const checkSession = async (req, res) => {
+  // If the request reaches here, the middleware has already verified the session
+  res.status(200).json({ success: true, message: "Session Valid", data: req.session.admin });
+};
+
 module.exports = {
   loginAdmin,
   getAllAdmins,
@@ -145,5 +150,6 @@ module.exports = {
   deleteAdmin,
   getAllUsers,
   updateAnyUser,
-  deleteAnyUser
+  deleteAnyUser,
+  checkSession
 }

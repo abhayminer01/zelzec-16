@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -12,50 +12,77 @@ import {
 import { NavLink } from "react-router-dom";
 
 export default function Sidebar() {
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
   const mainMenu = [
-    { name: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/dashboard" },
-    { name: "Users", icon: <Users size={18} />, path: "/dashboard/users" },
-    { name: "Products", icon: <Package size={18} />, path: "/dashboard/products" },
-    { name: "Admins", icon: <UserCog size={18} />, path: "/dashboard/admins" },
-    { name: "Categories", icon: <Folder size={18} />, path: "/dashboard/categories" },
-    { name: "Status", icon: <Activity size={18} />, path: "/dashboard/status" },
+    { name: "Dashboard", icon: <LayoutDashboard size={20} />, path: "/dashboard" },
+    { name: "Users", icon: <Users size={20} />, path: "/dashboard/users" },
+    { name: "Products", icon: <Package size={20} />, path: "/dashboard/products" },
+    { name: "Admins", icon: <UserCog size={20} />, path: "/dashboard/admins" },
+    { name: "Categories", icon: <Folder size={20} />, path: "/dashboard/categories" },
+    { name: "Status", icon: <Activity size={20} />, path: "/dashboard/status" },
   ];
 
   return (
-    <aside className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col justify-between">
+    <aside
+      onMouseEnter={() => setIsCollapsed(false)}
+      onMouseLeave={() => setIsCollapsed(true)}
+      className={`h-screen bg-white border-r border-gray-200 flex flex-col justify-between transition-all duration-300 ease-in-out z-50 ${isCollapsed ? "w-20" : "w-64"
+        }`}
+    >
       {/* Logo */}
       <div>
-        <div className="flex items-center gap-2 px-6 py-5 border-b border-gray-100">
-          <img className="size-10" src="/icon.png" alt="" />
-          <h1 className="text-lg font-semibold text-gray-800">ZelZec Admin</h1>
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-6'} py-5 border-b border-gray-100`}>
+          <div className="flex items-center gap-2">
+            <img className="size-8" src="/icon.png" alt="Logo" />
+            {!isCollapsed && (
+              <h1 className="text-lg font-bold text-gray-800 whitespace-nowrap overflow-hidden">
+                ZelZec Admin
+              </h1>
+            )}
+          </div>
         </div>
 
         {/* Main Menu */}
-        <nav className="mt-4 flex flex-col">
+        <nav className="mt-6 flex flex-col gap-1 px-3">
           {mainMenu.map((item, index) => (
             <NavLink
               to={item.path}
               key={index}
               end={item.path === "/dashboard"}
+              title={isCollapsed ? item.name : ""}
               className={({ isActive }) =>
-                `flex items-center gap-3 w-full px-6 py-2.5 text-sm transition-all ${isActive
-                  ? "bg-primary/10 text-primary border-r-4 border-primary font-medium"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-black"
+                `flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-3'} py-3 rounded-lg text-sm transition-all duration-300 ${isActive
+                  ? "bg-indigo-50 text-indigo-600 font-medium"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 }`
               }
             >
-              {item.icon}
-              <span>{item.name}</span>
+              {({ isActive }) => (
+                <>
+                  <div className={`${isActive ? "text-indigo-600" : "text-gray-500"} min-w-[20px] text-center`}>
+                    {item.icon}
+                  </div>
+                  <div className={`transition-all duration-300 overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
+                    <span>{item.name}</span>
+                  </div>
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
       </div>
 
       {/* Footer */}
-      <div className="border-t border-gray-100 py-3">
-        <button className="flex items-center gap-3 w-full px-6 py-2.5 text-sm text-gray-600 hover:bg-gray-100 hover:text-black transition-all">
-          <Settings size={18} />
-          <span>Settings</span>
+      <div className="border-t border-gray-100 py-4 px-3">
+        <button
+          title={isCollapsed ? "Settings" : ""}
+          className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-3'} w-full py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-300`}
+        >
+          <div className="min-w-[20px] text-center"><Settings size={20} /></div>
+          <div className={`transition-all duration-300 overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
+            <span>Settings</span>
+          </div>
         </button>
       </div>
     </aside>

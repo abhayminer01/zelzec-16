@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Sidebar from "../components/Sidebar";
 import axios from "axios";
 import { format } from "date-fns";
 import { Search, Trash2, Edit, X } from "lucide-react";
@@ -111,9 +110,8 @@ export default function ManageUsers() {
     }
 
     return (
-        <div className="flex h-screen bg-gray-50">
-            <Sidebar />
-            <div className="flex-1 overflow-auto p-8">
+        <div className="min-h-screen bg-gray-50 p-8">
+            <div className="overflow-auto">
                 <h1 className="text-3xl font-bold text-gray-800 mb-8">Manage Users</h1>
 
                 {/* Search */}

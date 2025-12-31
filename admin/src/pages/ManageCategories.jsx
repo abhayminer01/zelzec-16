@@ -8,7 +8,6 @@ import {
   togglePrimary,
 } from "../services/category-api";
 import { Pencil, Trash2, Plus, X, Star, Menu, Search } from "lucide-react";
-import Sidebar from "../components/Sidebar";
 
 export default function ManageCategories() {
   const [categories, setCategories] = useState([]);
@@ -174,11 +173,10 @@ export default function ManageCategories() {
                 <div
                   key={cat._id}
                   onClick={() => handleSelectCategory(cat)}
-                  className={`p-3 rounded-xl cursor-pointer transition-all border ${
-                    selectedCategory?._id === cat._id
+                  className={`p-3 rounded-xl cursor-pointer transition-all border ${selectedCategory?._id === cat._id
                       ? "border-indigo-400 bg-indigo-50"
                       : "border-gray-100 hover:bg-gray-50"
-                  }`}
+                    }`}
                 >
                   <div className="flex justify-between items-start">
                     <div>
@@ -195,11 +193,10 @@ export default function ManageCategories() {
                           e.stopPropagation();
                           handlePrimary(cat._id);
                         }}
-                        className={`p-1.5 rounded-full transition ${
-                          cat.primary
+                        className={`p-1.5 rounded-full transition ${cat.primary
                             ? "bg-yellow-100 text-yellow-600"
                             : "bg-gray-100 text-gray-500 hover:text-yellow-600"
-                        }`}
+                          }`}
                       >
                         <Star
                           size={13}

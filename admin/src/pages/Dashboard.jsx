@@ -12,7 +12,6 @@ import {
   Clock,
   Calendar
 } from "lucide-react";
-import Sidebar from "../components/Sidebar";
 import {
   LineChart,
   Line,
@@ -270,186 +269,180 @@ export default function Dashboard() {
   }; // This closes handleDownloadPDF
 
   return (
-    <div className="flex">
-      <Sidebar />
-
-      <main className="flex-1 min-h-screen bg-gray-50 p-10 overflow-x-hidden">
-        <div className="pb-10">
-          {/* Header */}
-          <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
-                ZelZec Admin Dashboard
-              </h1>
-              <p className="text-gray-500 mt-1">
-                Welcome back, manage your system efficiently.
-              </p>
-            </div>
-
-            <button
-              onClick={handleDownloadPDF}
-              className="flex items-center gap-2 bg-gray-900 text-white px-5 py-2.5 rounded-lg hover:bg-gray-800 transition-colors shadow-sm"
-            >
-              <Download size={18} />
-              Download Report
-            </button>
-          </header>
-
-          {/* Stats Section */}
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-            {cards.map((card, index) => (
-              <div
-                key={index}
-                onClick={card.action}
-                className={`cursor-pointer rounded-xl p-6 shadow-sm hover:shadow-md transition-all bg-white border border-gray-100 flex flex-col items-start gap-3 hover:-translate-y-1`}
-              >
-                <div className={`${card.color} p-3 rounded-lg text-white`}>
-                  {card.icon}
-                </div>
-                <h2 className="text-gray-800 font-semibold text-lg">
-                  {card.title}
-                </h2>
-              </div>
-            ))}
-          </section>
-
-          {/* Analytics Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-            {/* Daily Traffic (Hourly) */}
-            <section className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                  <Clock size={18} />
-                  Today's Hourly Traffic
-                </h2>
-              </div>
-              <div className="w-full h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={hourlyData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                    <XAxis dataKey="hour" stroke="#9ca3af" tick={{ fontSize: 12 }} />
-                    <YAxis stroke="#9ca3af" tick={{ fontSize: 12 }} />
-                    <Tooltip
-                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="users"
-                      stroke="#8b5cf6"
-                      strokeWidth={3}
-                      dot={{ r: 3, fill: '#8b5cf6' }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </section>
-
-            {/* Last 30 Days */}
-            <section className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                  <TrendingUp size={18} />
-                  Last 30 Days
-                </h2>
-                <span className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Total: {totalVisitors}</span>
-              </div>
-
-              <div className="w-full h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={dailyData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                    <XAxis dataKey="date" stroke="#9ca3af" tick={{ fontSize: 12 }} />
-                    <YAxis stroke="#9ca3af" tick={{ fontSize: 12 }} />
-                    <Tooltip
-                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="users"
-                      stroke="#3b82f6"
-                      strokeWidth={3}
-                      dot={{ r: 3, fill: '#3b82f6' }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </section>
-
-            {/* Monthly Trend */}
-            <section className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                  <Calendar size={18} />
-                  Monthly Trend
-                </h2>
-                <span className="text-sm text-gray-400">Last 12 Months</span>
-              </div>
-              <div className="w-full h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={monthlyData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                    <XAxis dataKey="month" stroke="#9ca3af" tick={{ fontSize: 12 }} />
-                    <YAxis stroke="#9ca3af" tick={{ fontSize: 12 }} />
-                    <Tooltip
-                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="users"
-                      stroke="#10b981"
-                      strokeWidth={3}
-                      dot={{ r: 3, fill: '#10b981' }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </section>
-
-            {/* Browser Distribution */}
-            <section className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                  <Users size={18} />
-                  Visitor Distribution
-                </h2>
-              </div>
-              <div className="w-full h-72 flex justify-center items-center">
-                {browserData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={browserData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {browserData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                      />
-                      <Legend verticalAlign="bottom" height={36} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="text-gray-400 text-sm">No data available</div>
-                )}
-              </div>
-            </section>
-
-          </div>
+    <>
+      {/* Header */}
+      <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
+            ZelZec Admin Dashboard
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Welcome back, manage your system efficiently.
+          </p>
         </div>
-      </main>
-    </div>
+
+        <button
+          onClick={handleDownloadPDF}
+          className="flex items-center gap-2 bg-gray-900 text-white px-5 py-2.5 rounded-lg hover:bg-gray-800 transition-colors shadow-sm"
+        >
+          <Download size={18} />
+          Download Report
+        </button>
+      </header>
+
+      {/* Stats Section */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        {cards.map((card, index) => (
+          <div
+            key={index}
+            onClick={card.action}
+            className={`cursor-pointer rounded-xl p-6 shadow-sm hover:shadow-md transition-all bg-white border border-gray-100 flex flex-col items-start gap-3 hover:-translate-y-1`}
+          >
+            <div className={`${card.color} p-3 rounded-lg text-white`}>
+              {card.icon}
+            </div>
+            <h2 className="text-gray-800 font-semibold text-lg">
+              {card.title}
+            </h2>
+          </div>
+        ))}
+      </section>
+
+      {/* Analytics Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        {/* Daily Traffic (Hourly) */}
+        <section className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              <Clock size={18} />
+              Today's Hourly Traffic
+            </h2>
+          </div>
+          <div className="w-full h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={hourlyData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+                <XAxis dataKey="hour" stroke="#9ca3af" tick={{ fontSize: 12 }} />
+                <YAxis stroke="#9ca3af" tick={{ fontSize: 12 }} />
+                <Tooltip
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="users"
+                  stroke="#8b5cf6"
+                  strokeWidth={3}
+                  dot={{ r: 3, fill: '#8b5cf6' }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+
+        {/* Last 30 Days */}
+        <section className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              <TrendingUp size={18} />
+              Last 30 Days
+            </h2>
+            <span className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Total: {totalVisitors}</span>
+          </div>
+
+          <div className="w-full h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={dailyData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+                <XAxis dataKey="date" stroke="#9ca3af" tick={{ fontSize: 12 }} />
+                <YAxis stroke="#9ca3af" tick={{ fontSize: 12 }} />
+                <Tooltip
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="users"
+                  stroke="#3b82f6"
+                  strokeWidth={3}
+                  dot={{ r: 3, fill: '#3b82f6' }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+
+        {/* Monthly Trend */}
+        <section className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              <Calendar size={18} />
+              Monthly Trend
+            </h2>
+            <span className="text-sm text-gray-400">Last 12 Months</span>
+          </div>
+          <div className="w-full h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={monthlyData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+                <XAxis dataKey="month" stroke="#9ca3af" tick={{ fontSize: 12 }} />
+                <YAxis stroke="#9ca3af" tick={{ fontSize: 12 }} />
+                <Tooltip
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="users"
+                  stroke="#10b981"
+                  strokeWidth={3}
+                  dot={{ r: 3, fill: '#10b981' }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+
+        {/* Browser Distribution */}
+        <section className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              <Users size={18} />
+              Visitor Distribution
+            </h2>
+          </div>
+          <div className="w-full h-72 flex justify-center items-center">
+            {browserData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={browserData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {browserData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  />
+                  <Legend verticalAlign="bottom" height={36} />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-gray-400 text-sm">No data available</div>
+            )}
+          </div>
+        </section>
+
+      </div>
+    </>
   );
 }

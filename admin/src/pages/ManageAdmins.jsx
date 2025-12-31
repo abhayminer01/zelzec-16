@@ -7,7 +7,6 @@ import {
 } from "../services/auth";
 import { toast, Toaster } from "sonner";
 import { Pencil, Trash2, Plus, X } from "lucide-react";
-import Sidebar from "../components/Sidebar";
 
 export default function ManageAdmins() {
   const [admins, setAdmins] = useState([]);
@@ -64,10 +63,9 @@ export default function ManageAdmins() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#fafafa]">
-      <Sidebar />
+    <div className="min-h-screen bg-[#fafafa]">
 
-      <main className="flex-1 p-8">
+      <main className="p-8">
         <Toaster position="top-right" />
 
         {/* Header */}

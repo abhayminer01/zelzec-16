@@ -20,7 +20,7 @@ export default function Sidebar() {
     { name: "Products", icon: <Package size={20} />, path: "/dashboard/products" },
     { name: "Admins", icon: <UserCog size={20} />, path: "/dashboard/admins" },
     { name: "Categories", icon: <Folder size={20} />, path: "/dashboard/categories" },
-    { name: "Status", icon: <Activity size={20} />, path: "/dashboard/status" },
+    { name: "Settings", icon: <Settings size={20} />, path: "/dashboard/settings" },
   ];
 
   return (
@@ -71,19 +71,6 @@ export default function Sidebar() {
             </NavLink>
           ))}
         </nav>
-      </div>
-
-      {/* Footer */}
-      <div className="border-t border-gray-100 py-4 px-3">
-        <button
-          title={isCollapsed ? "Settings" : ""}
-          className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-3'} w-full py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-300`}
-        >
-          <div className="min-w-[20px] text-center"><Settings size={20} /></div>
-          <div className={`transition-all duration-300 overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
-            <span>Settings</span>
-          </div>
-        </button>
       </div>
     </aside>
   );
